@@ -72,7 +72,8 @@ public class RlbtMultiAgentMain{
 
 	// root folder for writing output
 	public static String outputDir = currentDir + File.separator + "rlbt-files"+ File.separator + "results" + File.separator;// + System.nanoTime();
-	public static long systemtime=  System.nanoTime();
+	public static long systemtime = System.nanoTime();
+
 	// Configurations
 	static BurlapConfiguration burlapConfiguration = new BurlapConfiguration();
 	static LRConfiguration lrConfiguration = new LRConfiguration();  // for single agent architecture
@@ -122,12 +123,12 @@ public class RlbtMultiAgentMain{
 		/*------------Training - start running episodes------------------------*/
 		labRecruitsRlEnvironment.startAgentEnvironment();
 		for(int i = 0; i < numEpisodes; i++){	
-			System.out.println("Episode = "+(i+1)+" Starting");
+			System.out.println("[EPISODE INFORMATION] Episode = "+(i+1)+" Starting");
 			labRecruitsRlEnvironment.resetStateMemory();   // reset state buffer at the beginning of an episode
 			long startTime = System.currentTimeMillis();
 			episodes.add(agent.runLearningEpisode(labRecruitsRlEnvironment, maxActionsPerEpisode));
 			long estimatedTime = System.currentTimeMillis() - startTime;
-			System.out.println("Episode = "+(i+1)+" Finished, Time required  : "+estimatedTime);
+			System.out.println("[EPISODE INFORMATION] Episode = "+(i+1)+" Finished, Time required  : "+estimatedTime);
 			double episodecov = labRecruitsRlEnvironment.CalculateEpisodeCoverage();  /*calculate coverage after finishing an episode*/
 			/*store time and coverage per episode*/
 			episodeCoverage.add(episodecov);
@@ -430,11 +431,7 @@ public class RlbtMultiAgentMain{
 		}else {
 			throw new RuntimeException("Algorithm "+alg+" not supported");
 		}
-		
-		
 	}
-
-	
 	
 	private void executeTests (CommandLine line, Options options) throws InterruptedException, IOException {
 		System.out.println("=========================================================================================");

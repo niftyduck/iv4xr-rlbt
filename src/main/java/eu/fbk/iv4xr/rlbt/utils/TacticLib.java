@@ -698,7 +698,10 @@ public class TacticLib {
                 	// force wom update:
 //                	belief.mergeNewObservationIntoWOM(obs) ;
                     Acknowledgement a = belief.messenger().send(id,0, Message.MsgCastType.SINGLECAST, targetId,"ObservationSharing",obs) ;
-                    return belief;
+					System.out.println("obs from passive agent" + id + " to active agent" + targetId + ": " + obs);
+
+
+					return belief;
                 }).lift();
     }
     

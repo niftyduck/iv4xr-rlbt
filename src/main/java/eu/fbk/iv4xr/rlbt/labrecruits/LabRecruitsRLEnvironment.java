@@ -66,8 +66,8 @@ public class LabRecruitsRLEnvironment implements Environment {
 	private boolean dataCollectionEnabled = true;
 	private int traceCounter = 1;
 	
-	//temporary variable to test connection coverage
-	public static boolean functionalCoverageFlag =false;
+	// temporary variable to test connection coverage
+	public static boolean functionalCoverageFlag = false;
 	private static boolean AgentDeadFlag = false;
 	private double FullHealthScore =100;
 	private double HealthThreshold = 70;  
@@ -82,8 +82,7 @@ public class LabRecruitsRLEnvironment implements Environment {
 	private LabRecruitsEnvironment labRecruitsAgentEnvironment = null; 
 	private static LabRecruitsTestServer labRecruitsTestServer = null;
 	LabRecruitsTestAgent testAgent = null;
-	
-		
+
 	private LabRecruitsState currentState = null;
 	private double lastReward = 0;
 	
@@ -94,8 +93,7 @@ public class LabRecruitsRLEnvironment implements Environment {
 	private String labRecruitsLevel;
 	private int maxTicksPerAction = 100;
 	private String labRecruitsLevelFolder;
-	
-	
+
 	/*set the testing goal entity and entity type*/
 	private String goalEntity = "door3";
 	private String goalEntityType = LabEntity.DOOR;

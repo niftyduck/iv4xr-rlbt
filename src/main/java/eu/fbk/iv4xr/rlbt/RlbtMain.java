@@ -59,13 +59,13 @@ public class RlbtMain{
 	// Configurations
 	static BurlapConfiguration burlapConfiguration = new BurlapConfiguration();
 	static LRConfiguration lrConfiguration = new LRConfiguration();
-	
+
 	private static List<Episode> executeQLearningTrainingOnLabRecruits() throws InterruptedException, FileNotFoundException {
 		
 		LabRecruitsRLEnvironment labRecruitsRlEnvironment = new LabRecruitsRLEnvironment(lrConfiguration, new JaccardDistance());
 		DomainGenerator lrDomainGenerator = new LabRecruitsDomainGenerator();
 		final SADomain domain = (SADomain) lrDomainGenerator.generateDomain();
-				
+
 		int numEpisodes = (int)burlapConfiguration.getParameterValue("burlap.num_of_episodes");
 		
 		String rewardtp = (String)lrConfiguration.getParameterValue("labrecruits.rewardtype");
@@ -80,18 +80,17 @@ public class RlbtMain{
 			burlapConfiguration.setParameterValue("burlap.qlearning.decayedepsilonstep", Double.toString(0));			
 		}
 
-
 		/*create Reinforcement Learning (Q-learning) agent*/
-		QLearningRL agent = new QLearningRL(domain, 
-				(double)burlapConfiguration.getParameterValue("burlap.qlearning.gamma"), 
-				new RlbtHashableStateFactory(), 
-				(double)burlapConfiguration.getParameterValue("burlap.qlearning.qinit"), 
+		QLearningRL agent = new QLearningRL(domain,
+				(double)burlapConfiguration.getParameterValue("burlap.qlearning.gamma"),
+				new RlbtHashableStateFactory(),
+				(double)burlapConfiguration.getParameterValue("burlap.qlearning.qinit"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.lr"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.epsilonval"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.decayedepsilonstep"),
 				numEpisodes);
 		
-		List<Episode> episodes = new ArrayList<Episode>(numEpisodes);	//list to store results from Q-learning episodes
+		List<Episode> episodes = new ArrayList<Episode>(numEpisodes);	// list to store results from Q-learning episodes
 		List<Double> episodeCoverage =  new ArrayList<Double>(numEpisodes);
 		List<Long> episodeTime =  new ArrayList<Long>(numEpisodes);
 
