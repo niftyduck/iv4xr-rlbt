@@ -78,7 +78,7 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 	private LabRecruitsEnvironment labRecruitsAgentEnvironment = null; 
 	private static LabRecruitsTestServer labRecruitsTestServer = null;
 	
-	LabRecruitsTestAgent testAgentPassive = null;
+	private List<LabRecruitsTestAgent> testAgentPassives = new ArrayList<>();
 	LabRecruitsTestAgent testAgentActive = null;
 	
 		
@@ -104,7 +104,7 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 	private String goalEntityStatus = "isOpen"; // for a door, "isOn" for a button
 	private String goalEntityStatusValue = "true";
 	
-	private String agentNamePassive = "agent1";
+	private List<String> agentNamesPassive = new ArrayList<>();
 	private String agentNameActive = "agent2";
 	
 	private RlbtRewardFunction rewardFunction;
@@ -136,7 +136,12 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 		goalEntityType = checkEntityType((String) lrConfiguration.getParameterValue("labrecruits.target_entity_type"));
 		goalEntityStatusValue = String.valueOf(lrConfiguration.getParameterValue("labrecruits.target_entity_property_value"));
 		
-		agentNamePassive =(String) lrConfiguration.getParameterValue("labrecruits.agentpassive_id");
+		// Parse passive agent IDs from configuration (comma-separated)
+		String passiveIdsConfig = (String) lrConfiguration.getParameterValue("labrecruits.agentpassive_ids");
+		String[] passiveIdArray = passiveIdsConfig.split(",");
+		for (String id : passiveIdArray) {
+			agentNamesPassive.add(id.trim());
+		}
 		agentNameActive = (String) lrConfiguration.getParameterValue("labrecruits.agentactive_id");
 		
 		
@@ -444,18 +449,21 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 		gameConfig.host = "localhost"; // "192.168.29.120";
 		labRecruitsAgentEnvironment = new LabRecruitsEnvironment(gameConfig);
 		labRecruitsAgentEnvironment.startSimulation();
-		
-		
-		// creating two test agents, Passive and Active:
+
+		// creating test agents - Passive and Active:
         ComNode communication = new ComNode();
-        //passive agent
-		testAgentPassive = new LabRecruitsTestAgent(agentNamePassive) // matches the ID in the CSV file
-				. attachState(new BeliefState())
-				. attachEnvironment(labRecruitsAgentEnvironment)
-				. registerTo(communication)
-				. setTestDataCollector(new TestDataCollector());
-		
-		
+
+        //passive agents - create one for each ID in the configuration
+		for (String passiveAgentId : agentNamesPassive) {
+			LabRecruitsTestAgent passiveAgent = new LabRecruitsTestAgent(passiveAgentId)
+					. attachState(new BeliefState())
+					. attachEnvironment(labRecruitsAgentEnvironment)
+					. registerTo(communication)
+					. setTestDataCollector(new TestDataCollector());
+			testAgentPassives.add(passiveAgent);
+			System.out.println("Created passive agent: " + passiveAgentId);
+		}
+
 		//active agent
 		testAgentActive = new LabRecruitsTestAgent(agentNameActive) // matches the ID in the CSV file
 				. attachState(new BeliefState())
@@ -467,20 +475,21 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 			testAgentActive.withScalarInstrumenter(state -> instrumenter(testAgentActive.getState()));
 		}
 		
-		System.out.println("=========================start both agents with an explore=====================================");
-		// Both agent do an explore to start 
-		//Passive agent starts
-		GoalStructure goal =  explore(); //getActionGoal(goalEntity, goalEntityType);
-		doAction(goal, maxTicksPerAction, testAgentPassive);
-		currentStatePassive = (LabRecruitsState) AgentCurrentObservation(testAgentPassive);
-		
-		
-		GoalStructure goalactive =  explore(); //getActionGoal(goalEntity, goalEntityType);
+		System.out.println("=========================start all agents with an explore=====================================");
+		// All passive agents do an explore to start
+		for (LabRecruitsTestAgent passiveAgent : testAgentPassives) {
+			GoalStructure goal =  explore();
+			doAction(goal, maxTicksPerAction, passiveAgent);
+			currentStatePassive = (LabRecruitsState) AgentCurrentObservation(passiveAgent);
+			System.out.println("Passive agent " + passiveAgent.getId() + " initial observation: " + currentStatePassive.toString());
+		}
+
+		// Active agent explores
+		GoalStructure goalactive =  explore();
 		doAction(goalactive, maxTicksPerAction, testAgentActive);
 		currentStateActive = (LabRecruitsState) AgentCurrentObservation(testAgentActive);
 		double rewardval= UpdateGoalList(currentStateActive);   // update coverage goal for the first time
-		System.out.println("=========================Initial Observation of both agents=====================================");
-		DPrint.ul ("Passive agent  - Initial observation state: "+ currentStatePassive.toString());
+		System.out.println("=========================Initial Observation of active agent=====================================");
 		DPrint.ul ("Active agent - Initial observation state: "+ currentStateActive.toString());
 	}
 	
@@ -516,20 +525,24 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
 
 
 	public void RunPassiveAgent() {
-//		clearAgentMemory(testAgentPassive);
-		System.out.println("----------Passive agent is working now --------------- ");
-		//passive agent will only explore the environment and take an observation after each exploration event
-//		GoalStructure goal =  explore(); //getActionGoal(goalEntity, goalEntityType);
-//		doAction(goal, maxTicksPerAction, testAgentPassive);
-		doExplore(testAgentPassive);
-		
-		currentStatePassive = (LabRecruitsState) AgentCurrentObservation(testAgentPassive); // get observation
-		System.out.println("Passive agent state = "+ currentStatePassive.toString());
-		//LoadTestingEntityGoal(currentStatePassive);
-		
-		GoalStructure goalshareobj = shareObservation(testAgentPassive.getId(), testAgentActive.getId());
-		doAction(goalshareobj, maxTicksPerAction, testAgentPassive);
-				
+		System.out.println("----------Passive agents are working now --------------- ");
+		//passive agents will only explore the environment and take an observation after each exploration event
+
+		for (LabRecruitsTestAgent passiveAgent : testAgentPassives) {
+			doExplore(passiveAgent);
+
+			currentStatePassive = (LabRecruitsState) AgentCurrentObservation(passiveAgent); // get observation from passive
+			currentStateActive = (LabRecruitsState) AgentCurrentObservation(testAgentActive); // get observation from active
+			System.out.println("Passive agent " + passiveAgent.getId() + " state = " + currentStatePassive.toString());
+			System.out.println("Active agent state " + testAgentActive.getId() + " = " + currentStateActive.toString());
+
+			// Share observation with active agent
+			System.out.println("Trying to share information from passive agent " + passiveAgent.getId() + " to active agent " + testAgentActive.getId());
+			GoalStructure goalshareobj = shareObservation(passiveAgent.getId(), testAgentActive.getId());
+			System.out.println("MESSAGGIO INVIATO: the passive agent " + passiveAgent.getId() + " has shared an observation to active agent " + testAgentActive.getId());
+			doAction(goalshareobj, maxTicksPerAction, passiveAgent);
+		}
+
 	}//end of the function
 	/**
 	 * this way of defining actions is the most promising, it makes the agent more explorative, but could be improved
@@ -886,11 +899,10 @@ public class LabRecruitsRLMultiAgentEnvironment implements Environment {
         //always true
         Goal g = goal(String.format("share observation to agent"))
                 .toSolve((BeliefState belief) -> true);
-
         // make an observation and update agent
         GoalStructure goal = g.withTactic(TacticLib.shareObservationToSingleAgent(agentid, targetagentid)).lift();
 
-        return goal;
+		return goal;
     }
 	
 	private static GoalStructure receiveObservationShare() {

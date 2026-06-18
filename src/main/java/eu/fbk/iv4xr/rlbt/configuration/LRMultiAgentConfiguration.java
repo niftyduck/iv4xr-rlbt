@@ -12,7 +12,7 @@ public class LRMultiAgentConfiguration extends Configuration{
 		
 		parameters.put("labrecruits.execution_folder", ".");
 		
-		parameters.put("labrecruits.agentpassive_id", "agent1");
+		parameters.put("labrecruits.agentpassive_ids", "agent1,agent3,agent4");
 		parameters.put("labrecruits.agentactive_id", "agent2");
 		parameters.put("labrecruits.use_graphics",true);
 		parameters.put("labrecruits.max_ticks_per_action",100);

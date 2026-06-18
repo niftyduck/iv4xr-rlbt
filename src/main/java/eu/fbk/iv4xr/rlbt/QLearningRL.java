@@ -702,7 +702,7 @@ public class QLearningRL extends MDPSolver implements QProvider, LearningAgent, 
 			{
 				System.out.println("State similarity check in Qtable - runLearningEpisode()");
 				similarnode = GetSimilarEntry(curState);
-			
+
 				if (similarnode!=null)
 				{
 					System.out.println("Similar state entry found in qtable");
@@ -718,7 +718,7 @@ public class QLearningRL extends MDPSolver implements QProvider, LearningAgent, 
 			//System.out.println("In runLearningEpisode() - before selection of action");
 			Action action = learningPolicy.action(curState.s());
 			System.out.println("Action Selected : in runLearningEpisode(): "+action.actionName());
-			//printQtable(curState);
+			printQtable(curState);
 			//System.out.println("Get Q value");
 			QValue curQ = this.getQ(curState, action);
 			
