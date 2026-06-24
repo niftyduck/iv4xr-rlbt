@@ -37,7 +37,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>eu.fbk.iv4xr.rlbt.RlbtMultiAgentMain</mainClass>
+                            <mainClass>eu.fbk.iv4xr.rlbt.RlbtLauncher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
