@@ -3,6 +3,7 @@ package eu.fbk.iv4xr.rlbt;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 public class RlbtLauncher {
@@ -58,8 +59,28 @@ public class RlbtLauncher {
 	}
 
 	private static void launchMineAgentMain(Properties gameConfig, String burlapConfig) throws Exception {
-		String sutConfig = gameConfig.getProperty("game.mineAgentSutConfig");
-		System.out.println("Welcome to the nether!");
+		String sutConfigPath = gameConfig.getProperty("game.mineAgentSutConfig");
+
+		Properties mineConfig = new Properties();
+		try (InputStream in = new FileInputStream(sutConfigPath)) {
+			mineConfig.load(in);
+		}
+
+		String address = mineConfig.getProperty("mine.address", "127.0.0.1:25565");
+		String testFile = mineConfig.getProperty("mine.test", "./arena.json");
+
+		String npm = System.getProperty("os.name").toLowerCase().contains("win") ? "npm.cmd" : "npm";
+		File workDir = new File("minecraft/mineflayer-testbench");
+
+		ProcessBuilder pb = new ProcessBuilder(
+				List.of(npm, "run", "start", "address=" + address, "test=" + testFile));
+		pb.directory(workDir);
+		pb.inheritIO();
+
+		System.out.println("Starting mineflayer-testbench: address=" + address + " test=" + testFile);
+		Process p = pb.start();
+		int exitCode = p.waitFor();
+		System.exit(exitCode);
 	}
 
 	private static String toModeFlag(String mode) {
