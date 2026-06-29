@@ -13,14 +13,22 @@ public class RlbtLauncher {
 			+ "src/test/resources/configurations/game.config";
 
 	public static void main(String[] args) throws Exception {
-		String gameConfigFile = args.length > 0 ? args[0] : DEFAULT_GAME_CONFIG;
+		String gameName = "LabRecruits";
+		String gameConfigFile = DEFAULT_GAME_CONFIG;
+
+		for (int i = 0; i < args.length; i++) {
+			if ("-game".equals(args[i]) && i + 1 < args.length) {
+				gameName = args[++i];
+			} else {
+				gameConfigFile = args[i];
+			}
+		}
 
 		Properties gameConfig = new Properties();
 		try (InputStream in = new FileInputStream(gameConfigFile)) {
 			gameConfig.load(in);
 		}
 
-		String gameName = gameConfig.getProperty("game.name", "LabRecruits");
 		String modeFlag = toModeFlag(gameConfig.getProperty("game.mode", "training"));
 		String burlapConfig = gameConfig.getProperty("game.burlapConfig");
 
@@ -34,7 +42,7 @@ public class RlbtLauncher {
 				launchMineAgentMain(gameConfig, burlapConfig);
 				break;
 			default:
-				throw new IllegalArgumentException("Unknown game.name in game.config: " + gameName);
+				throw new IllegalArgumentException("Unknown game: " + gameName + ". Use -game LabRecruits or -game Minecraft");
 		}
 	}
 
