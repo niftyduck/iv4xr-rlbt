@@ -78,7 +78,7 @@ public class RlbtLauncher {
 		String testFile = mineConfig.getProperty("mine.test", "./arena.json");
 
 		String npm = System.getProperty("os.name").toLowerCase().contains("win") ? "npm.cmd" : "npm";
-		File workDir = new File("minecraft/mineflayer-testbench");
+		File workDir = new File("sut/minecraft/mineflayer-testbench");
 
 		ProcessBuilder pb = new ProcessBuilder(
 				List.of(npm, "run", "start", "address=" + address, "test=" + testFile));

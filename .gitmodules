@@ -1,3 +1,3 @@
 [submodule "minecraft/mineflayer-testbench"]
-	path = minecraft/mineflayer-testbench
+	path = sut/minecraft/mineflayer-testbench
 	url = https://github.com/niftyduck/MineflayerTestbench
