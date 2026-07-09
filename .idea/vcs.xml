@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sut/minecraft/minecraftlib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench" vcs="Git" />
   </component>
 </project>

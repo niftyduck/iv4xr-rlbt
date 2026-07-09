@@ -2,15 +2,11 @@
 Reinforcement Learning based coverage driven test case generation tool.
 
 ## Usage
-To run RLbT use the following command
+To run RLbT use the following command:
 
-> java -jar rlbt.jar -$mode -burlapConfig $burlapConfigFile -sutConfig $sutConfigFile
+> java -jar target/iv4xr-rlbt-x.x-jar-with-dependencies.jar -game $game
 
-where:
-- $mode could be either trainingMode or testingMode
-	- trainingMode could be either 'trainingMode' indicating single-agent or 'multiagentTrainingMode' indicating multi-agent architecture
-- $burlapConfigFile is a file for configuring BURLAP Q-learning agent
-- $sutConfigFile is a file for configuring Lab Recruits SUT
+where $game is either 'LabRecruits' or 'Minecraft'.
 
 ## RLbT mode
 When RLbT is run in training mode, the agent plays for several episode and output a Q-table. RlbT supports both single and multi-agent training mode.
