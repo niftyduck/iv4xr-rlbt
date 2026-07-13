@@ -5,11 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f74444e7-4893-4528-b825-e1bffcf36688" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/target/test-classes/levels/arena.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/test/java/eu/fbk/iv4xr/minecraftlib/MinecraftGoalLibTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/test/java/eu/fbk/iv4xr/minecraftlib/MinecraftGoalLibTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.json" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -21,6 +25,13 @@
     <persistenceIdMap>
       <entry key="_C:/Users/tparl/IdeaProjects/RLbT_Main" value="3FXqF5qjCN8DeEsPbjssi5p34zv" />
     </persistenceIdMap>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -36,6 +47,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.MineAgent.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",

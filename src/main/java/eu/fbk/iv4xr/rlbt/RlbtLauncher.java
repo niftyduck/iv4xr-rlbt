@@ -1,8 +1,15 @@
 package eu.fbk.iv4xr.rlbt;
 
+import eu.fbk.iv4xr.rlbt.minecraft.MineAgent;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
@@ -75,20 +82,53 @@ public class RlbtLauncher {
 		}
 
 		String address = mineConfig.getProperty("mine.address", "127.0.0.1:25565");
-		String testFile = mineConfig.getProperty("mine.test", "./arena.json");
+		String levelPath = new File(mineConfig.getProperty("mine.level")).getAbsolutePath();
+		String testbenchUrl = mineConfig.getProperty("mine.testbenchUrl", "http://localhost:3000");
 
 		String npm = System.getProperty("os.name").toLowerCase().contains("win") ? "npm.cmd" : "npm";
 		File workDir = new File("sut/minecraft/mineflayer-testbench");
 
 		ProcessBuilder pb = new ProcessBuilder(
-				List.of(npm, "run", "start", "address=" + address, "test=" + testFile));
+				List.of(npm, "run", "start", "address=" + address));
 		pb.directory(workDir);
 		pb.inheritIO();
 
-		System.out.println("Starting mineflayer-testbench: address=" + address + " test=" + testFile);
-		Process p = pb.start();
-		int exitCode = p.waitFor();
-		System.exit(exitCode);
+		System.out.println("Starting mineflayer-testbench (server mode): address=" + address);
+		Process testbench = pb.start();
+
+		try {
+			waitForTestbench(testbenchUrl, 60);
+			MineAgent.main(new String[] { testbenchUrl, levelPath });
+		} finally {
+			// npm spawns node as a child process: kill the whole tree
+			testbench.descendants().forEach(ProcessHandle::destroy);
+			testbench.destroy();
+		}
+	}
+
+	/**
+	 * Poll the testbench /status endpoint until it answers or the timeout expires.
+	 */
+	private static void waitForTestbench(String url, int timeoutSeconds) throws Exception {
+		HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+		HttpRequest req = HttpRequest.newBuilder()
+				.uri(URI.create(url + "/status"))
+				.timeout(Duration.ofSeconds(2))
+				.GET().build();
+
+		long deadline = System.currentTimeMillis() + timeoutSeconds * 1000L;
+		while (System.currentTimeMillis() < deadline) {
+			try {
+				if (http.send(req, HttpResponse.BodyHandlers.ofString()).statusCode() < 500) {
+					return;
+				}
+			} catch (Exception e) {
+				// not up yet, retry
+			}
+			Thread.sleep(1000);
+		}
+		throw new IllegalStateException("MineflayerTestbench not reachable at " + url
+				+ " after " + timeoutSeconds + "s");
 	}
 
 	private static String toModeFlag(String mode) {
@@ -99,5 +139,4 @@ public class RlbtLauncher {
 			default: throw new IllegalArgumentException("Unknown game.mode in game.config: " + mode);
 		}
 	}
-
 }
