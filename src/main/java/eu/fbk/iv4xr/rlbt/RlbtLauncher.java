@@ -74,31 +74,35 @@ public class RlbtLauncher {
 	}
 
 	private static void launchMineAgentMain(Properties gameConfig, String burlapConfig) throws Exception {
+		// Configuration files
 		String sutConfigPath = gameConfig.getProperty("game.mineAgentSutConfig");
-
 		Properties mineConfig = new Properties();
 		try (InputStream in = new FileInputStream(sutConfigPath)) {
 			mineConfig.load(in);
 		}
 
+		// Choose training, random or test
+		String modeFlag = toModeFlag(gameConfig.getProperty("game.mode", "training"));
+
+		// Get server address and level
 		String address = mineConfig.getProperty("mine.address", "127.0.0.1:25565");
 		String levelPath = new File(mineConfig.getProperty("mine.level")).getAbsolutePath();
 		String testbenchUrl = mineConfig.getProperty("mine.testbenchUrl", "http://localhost:3000");
 
+		// Start MineFlayer Testbench in server mode
 		String npm = System.getProperty("os.name").toLowerCase().contains("win") ? "npm.cmd" : "npm";
 		File workDir = new File("sut/minecraft/mineflayer-testbench");
-
-		ProcessBuilder pb = new ProcessBuilder(
-				List.of(npm, "run", "start", "address=" + address));
+		ProcessBuilder pb = new ProcessBuilder(List.of(npm, "run", "start", "address=" + address));
 		pb.directory(workDir);
 		pb.inheritIO();
-
 		System.out.println("Starting mineflayer-testbench (server mode): address=" + address);
 		Process testbench = pb.start();
 
+
+		// Start the agent
 		try {
 			waitForTestbench(testbenchUrl, 60);
-			MineAgent.main(new String[] { testbenchUrl, levelPath });
+			MineAgent.main(new String[] { testbenchUrl, levelPath, modeFlag });
 		} finally {
 			// npm spawns node as a child process: kill the whole tree
 			testbench.descendants().forEach(ProcessHandle::destroy);
