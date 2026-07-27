@@ -1,6 +1,7 @@
 package eu.fbk.iv4xr.rlbt;
 
 import eu.fbk.iv4xr.rlbt.minecraft.MineAgent;
+import eu.fbk.iv4xr.rlbt.minecraft.MineAgentBaseline;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,6 +76,7 @@ public class RlbtLauncher {
 
 	private static void launchMineAgentMain(Properties gameConfig, String burlapConfig) throws Exception {
 		// Configuration files
+		boolean baselineFlag = baselineFlag(gameConfig.getProperty("game.mineAgentUseBaseline", "false"));
 		String sutConfigPath = gameConfig.getProperty("game.mineAgentSutConfig");
 		Properties mineConfig = new Properties();
 		try (InputStream in = new FileInputStream(sutConfigPath)) {
@@ -98,15 +100,25 @@ public class RlbtLauncher {
 		System.out.println("Starting mineflayer-testbench (server mode): address=" + address);
 		Process testbench = pb.start();
 
-
-		// Start the agent
-		try {
-			waitForTestbench(testbenchUrl, 60);
-			MineAgent.main(new String[] { testbenchUrl, levelPath, modeFlag });
-		} finally {
-			// npm spawns node as a child process: kill the whole tree
-			testbench.descendants().forEach(ProcessHandle::destroy);
-			testbench.destroy();
+		if (baselineFlag) {
+			System.out.println("[MODE] Selected baselineMode for MineAgent: this is a scripted version just for comparison.");
+			try {
+				waitForTestbench(testbenchUrl, 60);
+				MineAgentBaseline.main(new String[] { testbenchUrl, levelPath });
+			} finally {
+				// npm spawns node as a child process: kill the whole tree
+				testbench.descendants().forEach(ProcessHandle::destroy);
+				testbench.destroy();
+			}
+		} else { // Agent (RL-DRL)
+			System.out.println("[MODE] Selected " + modeFlag + " for MineAgent.");
+			try {
+				waitForTestbench(testbenchUrl, 60);
+				MineAgent.main(new String[] { testbenchUrl, levelPath, modeFlag });
+			} finally {
+				testbench.descendants().forEach(ProcessHandle::destroy);
+				testbench.destroy();
+			}
 		}
 	}
 
@@ -134,6 +146,15 @@ public class RlbtLauncher {
 		throw new IllegalStateException("MineflayerTestbench not reachable at " + url
 				+ " after " + timeoutSeconds + "s");
 	}
+
+	private static boolean baselineFlag(String baseline) throws IllegalArgumentException{
+		if (baseline.equalsIgnoreCase("true"))
+			return true;
+		else if (baseline.equalsIgnoreCase("false"))
+			return false;
+		throw new IllegalArgumentException("Invalid value for game.baseline: " + baseline);
+	}
+
 
 	private static String toModeFlag(String mode) {
 		switch (mode) {

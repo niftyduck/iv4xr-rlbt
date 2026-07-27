@@ -88,7 +88,8 @@ public class RlbtMain{
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.lr"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.epsilonval"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.decayedepsilonstep"),
-				numEpisodes);
+				numEpisodes,
+				new JaccardDistance());
 		
 		List<Episode> episodes = new ArrayList<Episode>(numEpisodes);	// list to store results from Q-learning episodes
 		List<Double> episodeCoverage =  new ArrayList<Double>(numEpisodes);
@@ -252,7 +253,8 @@ public class RlbtMain{
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.lr"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.epsilonval"),
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.decayedepsilonstep"),
-				numEpisodes);
+				numEpisodes,
+				new JaccardDistance());
 		
 		List<Episode> episodes = new ArrayList<Episode>(numEpisodes);	//list to store results from Q-learning episodes
 		List<Double> episodeCoverage =  new ArrayList<Double>(numEpisodes);
@@ -396,7 +398,8 @@ public class RlbtMain{
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.gamma"), 
 				new RlbtHashableStateFactory(), 
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.qinit"), 
-				(double)burlapConfiguration.getParameterValue("burlap.qlearning.lr"));
+				(double)burlapConfiguration.getParameterValue("burlap.qlearning.lr"),
+				new JaccardDistance());
 		long startTime = System.currentTimeMillis();
 		
 		String qtablePath = outputDir + File.separator + "cqtable.ser";//(String)burlapConfiguration.getParameterValue("burlap.qlearning.out_qtable");

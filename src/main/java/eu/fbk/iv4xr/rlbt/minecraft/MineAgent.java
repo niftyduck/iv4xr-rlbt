@@ -2,6 +2,7 @@ package eu.fbk.iv4xr.rlbt.minecraft;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,13 +10,14 @@ import burlap.behavior.singleagent.Episode;
 import burlap.mdp.auxiliary.DomainGenerator;
 import burlap.mdp.singleagent.SADomain;
 import eu.fbk.iv4xr.minecraftlib.MinecraftEnv;
+import eu.fbk.iv4xr.rlbt.QLearningRL;
 import eu.fbk.iv4xr.rlbt.RlbtMain;
 import eu.fbk.iv4xr.rlbt.configuration.BurlapConfiguration;
 import eu.fbk.iv4xr.rlbt.labrecruits.LabRecruitsDomainGenerator;
+import eu.fbk.iv4xr.rlbt.labrecruits.RlbtHashableStateFactory;
 import eu.iv4xr.framework.spatial.Vec3;
 
 public class MineAgent {
-
 	// Predefined defaults
 	static String defaultTestbenchUrl = "http://localhost:3000";
 	static String defaultLevelCsv = "sut/minecraft/mineflayer-testbench/examples/arena.csv";
@@ -23,18 +25,32 @@ public class MineAgent {
 
 	static BurlapConfiguration burlapConfiguration = new BurlapConfiguration();
 
+
 	private static void executeDeepQLearningTrainingOnMinecraft(String testbenchUrl, String levelCsv) throws InterruptedException, FileNotFoundException {
 		MinecraftEnv minecraftEnv = new MinecraftEnv(testbenchUrl);
 		initializeLevel(testbenchUrl, levelCsv, minecraftEnv);
 
 		DomainGenerator mcDomainGenerator = new MinecraftDomainGenerator();
 		final SADomain domain = (SADomain) mcDomainGenerator.generateDomain();
-
 	}
+
 
 	private static void executeQLearningTrainingOnMinecraft(String testbenchUrl, String levelCsv) throws InterruptedException, FileNotFoundException {
-		System.out.println("-------------------------- !QLEARNING HAS NOT BEEN IMPLEMENTED YET! --------------------------");
+		MinecraftEnv minecraftEnv = new MinecraftEnv(testbenchUrl);
+		initializeLevel(testbenchUrl, levelCsv, minecraftEnv);
+		DomainGenerator mcDomainGenerator = new MinecraftDomainGenerator();
+		final SADomain domain = (SADomain) mcDomainGenerator.generateDomain();
+
+		int numEpisodes = (int)burlapConfiguration.getParameterValue("burlap.num_of_episodes");
+
+		// The reward type is always CuriosityDriven (not implemented Sparse)
+		double epsilonval = (double)burlapConfiguration.getParameterValue("burlap.qlearning.epsilonval");
+		double calculatedDecayVal = (double)(epsilonval/numEpisodes);
+		calculatedDecayVal=calculatedDecayVal/2;
+		burlapConfiguration.setParameterValue("burlap.qlearning.decayedepsilonstep", Double.toString(calculatedDecayVal));  // set calculated decayed value according to number of episodes
+		System.out.println("epsilon val ="+epsilonval+ "  decay = "+calculatedDecayVal);
 	}
+
 
 	private void executeTraining(String testbenchUrl, String levelCsv) throws FileNotFoundException, InterruptedException {
 		System.out.println("-------------------------- Starting Training on Minecraft ---------------------");
@@ -47,6 +63,7 @@ public class MineAgent {
 		else
 			throw new RuntimeException("Algorithm "+alg+" not supported");
 	}
+
 
 	public void executeTesting(String testbenchUrl, String levelCsv) {
 		System.out.println("-------------------------- !TESTING HAS NOT BEEN IMPLEMENTED YET! --------------------------");
@@ -68,6 +85,7 @@ public class MineAgent {
 		System.out.println("Arena built. Tags: " + tags);
 	}
 
+
 	/**
 	 * Connect to a running MineflayerTestbench server and build the arena level.
 	 * @param args [0] = testbench URL (default localhost:3000),
@@ -82,7 +100,6 @@ public class MineAgent {
 		String levelCsv = args.length > 1 ? args[1] : defaultLevelCsv;
 		String mode = args.length > 2 ? args[2] : defaultGameMode;
 
-		// TODO: add baseline choice here (or in command line!)
 		switch(mode) {
 			case "training":
 				main.executeTraining(testbenchUrl, levelCsv);
@@ -99,9 +116,5 @@ public class MineAgent {
                     main.executeTesting(testbenchUrl, levelCsv);
                 break;
 		}
-
-
-
-
 	}
 }

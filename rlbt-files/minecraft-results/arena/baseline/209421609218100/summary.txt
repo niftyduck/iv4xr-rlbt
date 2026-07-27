@@ -1,0 +1,3 @@
+Hits attempted: 1 | Hits landed: 0 | Efficiency: 0.0
+Total damage dealt: 0.0 | Total damage taken: 0.0 | Killed: true
+Ticks to kill: 120
