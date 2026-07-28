@@ -19,10 +19,10 @@ import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 /**
  * The BURLAP environment of the Minecraft combat scenario
  *
- * It is the only place where the layers meet: the raw observation coming from
- * the SUT is turned into the discretised {@link MinecraftBurlapState} here, and
- * the symbolic actions of {@link MinecraftAction} are turned into aplib goals
- * here. Everything else stays SUT-agnostic.
+ * The raw observation coming from the SUT is turned into
+ * the discretized {@link MinecraftBurlapState} here, and
+ * the symbolic actions of {@link MinecraftAction} are turned
+ * into aplib goals here. Everything else stays SUT-agnostic.
  */
 public class MinecraftRLEnvironment implements Environment {
 
@@ -35,15 +35,36 @@ public class MinecraftRLEnvironment implements Environment {
     private double lastReward;
     private int updateCycles;   // budget of episode actions
 
+    /*
+     * Raw HP readings of the last observation, kept because the buckets of the
+     * state are too coarse to measure a single hit and the reward needs the
+     * actual numbers. Caching them is not only about saving round trips: every
+     * extra getMobHealth is another chance to hit the short timeout, and a timed
+     * out reading is indistinguishable from "the mob is gone", i.e. it would end
+     * the episode by mistake (PROJECT.md §2.7).
+     */
+    private Float lastMobHp;
+    private Float lastOwnHp;
+
+    /*
+     * Death counters. agentDied is the only reliable way to know the agent died:
+     * the death itself is an event, and what we do is poll a state once per
+     * action. Minecraft respawns the bot and heals it back to full within a few
+     * ticks, so an observation taken before the action and one taken after it
+     * both read 20 HP and the death vanishes between them -- which is exactly
+     * what happened on the first real run: the episode never became terminal,
+     * and the agent went on acting from the world spawn, outside the arena.
+     *
+     * deathsAtEpisodeStart is the baseline the current count is compared with,
+     * because the counter reported by the testbench is monotonic over the whole
+     * process, not per episode.
+     */
+    private Integer deathsAtEpisodeStart;
+    private boolean agentDied;
+
     private final String AGENT_ID = "Bot";
     private final String MOB_TAG = "mob1";
 
-    /*
-     * Tuning constants. They live here, and not inside the actions, on purpose:
-     * the action name is the Q-table column key, so changing any of these does
-     * not invalidate a saved Q-table (see PROJECT.md §2.6). They move to
-     * MinecraftConfiguration at step 9.
-     */
 
     /**
      * How close APPROACH tries to get, in blocks. Deliberately inside MELEE
@@ -78,6 +99,17 @@ public class MinecraftRLEnvironment implements Environment {
 
     /** Action budget of one episode. */
     private static final int MAX_ACTIONS_PER_EPISODE = 30;
+
+    /**
+     * The action budget, for the training loop to pass to
+     * {@code runLearningEpisode}. Exposed so that the two cut-off points agree
+     * on one number: BURLAP stops after its own maxSteps, this environment stops
+     * on isInTerminalState(), and the episodes would be hard to read if the two
+     * disagreed. Goes away with MinecraftConfiguration at step 9.
+     */
+    public static int maxActionsPerEpisode() {
+        return MAX_ACTIONS_PER_EPISODE;
+    }
 
     /**
      * The weapon the agent fights with. It comes from the inventory section of
@@ -137,6 +169,20 @@ public class MinecraftRLEnvironment implements Environment {
 
         currentState.updateAbstraction(ownHp, mobHp, mobMaxHp, dist);
 
+        // keep the raw HP around: the reward is computed on these, not on the
+        // buckets, and re-reading them would mean asking the SUT again
+        lastMobHp = mobHp;
+        lastOwnHp = ownHp;
+
+        // latch the death: once set it stays set for the rest of the episode,
+        // because by now the agent is alive again and nothing else records that
+        // it died. Latching also means a death is never lost between two
+        // observations, whatever happens in the meantime.
+        Integer deaths = state.getDeathCount();
+        if (deaths != null && deathsAtEpisodeStart != null && deaths > deathsAtEpisodeStart) {
+            agentDied = true;
+        }
+
         // a copy, so that the state handed to the learner is not altered by the
         // next observation (BURLAP keeps past states inside the episodes)
         return currentState.copy();
@@ -184,10 +230,10 @@ public class MinecraftRLEnvironment implements Environment {
         MinecraftAction action = (MinecraftAction) a;
 
         State oldState = currentObservation();
-        // raw readings, taken together with the observation above: the buckets
-        // of the state are too coarse to measure the damage of a single hit
-        Float mobHpBefore = minecraftEnv.getMobHealth(MOB_TAG);
-        Float ownHpBefore = state.getHealth();
+        // raw readings of that same observation, kept before the action runs:
+        // the buckets are too coarse to measure the damage of a single hit
+        Float mobHpBefore = lastMobHp;
+        Float ownHpBefore = lastOwnHp;
 
         GoalStructure goal = toGoal(action);
         if (goal != null) {
@@ -284,19 +330,21 @@ public class MinecraftRLEnvironment implements Environment {
      *
      * Measured on raw HP and not on the state buckets, which are far too coarse
      * to notice a single hit.
+     *
+     * The "after" readings are the ones cached by the observation that closes
+     * {@link #executeAction}, so this asks the SUT nothing: it must be called
+     * after that observation, never before.
      */
     private double combatReward(Float mobHpBefore, Float ownHpBefore) {
         double dealt = 0;
         if (mobHpBefore != null) {
-            Float after = minecraftEnv.getMobHealth(MOB_TAG);
-            float mobHpAfter = (after == null) ? 0f : after;   // gone means dead, i.e. 0 HP
+            float mobHpAfter = (lastMobHp == null) ? 0f : lastMobHp;   // gone means dead, i.e. 0 HP
             dealt = Math.max(0f, mobHpBefore - mobHpAfter);
         }
 
         double taken = 0;
-        Float ownHpAfter = state.getHealth();
-        if (ownHpBefore != null && ownHpAfter != null) {
-            taken = Math.max(0f, ownHpBefore - ownHpAfter);
+        if (ownHpBefore != null && lastOwnHp != null) {
+            taken = Math.max(0f, ownHpBefore - lastOwnHp);
         }
 
         return dealt - taken;
@@ -304,14 +352,23 @@ public class MinecraftRLEnvironment implements Environment {
 
     /**
      * The episode is over when one of the fighters is down, or the action budget
-     * is spent.
+     * is spent. An episode is therefore "until Steve or the zombie dies, or the
+     * budget runs out".
      *
-     * Reads the buckets of the last observation, so it is only meaningful after
+     * The two deaths are detected in different ways, and not by choice. The mob's
+     * is a state: it stops existing, getMobHealth returns null, the bucket reads
+     * DEAD and stays that way. The agent's is only an event: it is alive again a
+     * few ticks later, so it has to be caught through the death counter
+     * (agentDied, latched in currentObservation) instead. Asking for
+     * ownHpBucket == DEAD here would compile, read well, and never once fire.
+     *
+     * Reads the last observation, so it is only meaningful after
      * currentObservation() has run -- which executeAction always does.
      */
     @Override
     public boolean isInTerminalState() {
         return currentState.getMobHpBucket() == HPBucket.DEAD
+                || agentDied
                 || currentState.getOwnHpBucket() == HPBucket.DEAD
                 || updateCycles >= MAX_ACTIONS_PER_EPISODE;
     }
@@ -330,6 +387,25 @@ public class MinecraftRLEnvironment implements Environment {
      * LabRecruitsRLEnvironment.startAgentEnvironment.
      */
     public void startAgentEnvironment() {
+        updateCycles = 0;
+        lastReward = 0;
+        agentDied = false;
+
+        /* Re-baseline the death counter before anything else in the episode can
+         * kill the agent. Cleared first so that the reading below, and any
+         * observation taken while equipping, cannot compare against the previous
+         * episode's baseline and latch a death that belongs to it. */
+        deathsAtEpisodeStart = null;
+        state.updateState(AGENT_ID);
+        deathsAtEpisodeStart = state.getDeathCount();
+        if (deathsAtEpisodeStart == null) {
+            // No count means a testbench without patch P2 (PROJECT.md §2.11).
+            // Letting this pass would run a training whose episodes silently
+            // never end on the agent's death -- the very bug this fixes.
+            throw new RuntimeException("the testbench does not report the death count: "
+                    + "rebuild it with patch P2, otherwise the agent's death is undetectable");
+        }
+
         GoalStructure equip = goalLib.selected(WEAPON);
         runGoal(equip, MAX_TICKS_PER_ACTION);
         if (!equip.getStatus().success()) {
@@ -337,9 +413,7 @@ public class MinecraftRLEnvironment implements Environment {
                     + "bare-handed and the run would not be comparable: " + equip.getStatus());
         }
 
-        updateCycles = 0;
-        lastReward = 0;
-        currentObservation();   // so isInTerminalState() has fresh buckets to read
+        currentObservation();   // so isInTerminalState() has a fresh observation to read
     }
 
     /**
@@ -359,6 +433,7 @@ public class MinecraftRLEnvironment implements Environment {
      */
     @Override
     public void resetEnvironment() {
+        waitUntilAlive();
         minecraftEnv.resetWorker();
 
         // The loud failures are already covered: MinecraftEnv.postJson raises
@@ -376,5 +451,31 @@ public class MinecraftRLEnvironment implements Environment {
         }
 
         startAgentEnvironment();
+    }
+
+    /**
+     * Wait for the agent to be back on its feet before rebuilding the level.
+     *
+     * Since the episode now ends on the agent's death, a reset almost always
+     * follows one, and a dead bot is exactly the state in which a reset does
+     * nothing useful: /reset works by having the bot type commands (/tp, /clear,
+     * /effect, level-builder.ts), and a bot sitting on the death screen types
+     * none of them. The reset would report success and leave the arena
+     * half-rebuilt.
+     *
+     * mineflayer respawns on its own, so this is a short wait, not a fix for a
+     * hang -- hence letting the budget lapse quietly rather than raising: the
+     * guard on the tag map right after this one is what catches a reset that
+     * really did fail.
+     */
+    private void waitUntilAlive() {
+        int ticks = 0;
+        while (ticks < MAX_TICKS_PER_ACTION) {
+            state.updateState(AGENT_ID);
+            if (state.isAgentAlive())
+                return;
+            minecraftEnv.waitTicks(AGENT_ID, 1);
+            ticks++;
+        }
     }
 }
