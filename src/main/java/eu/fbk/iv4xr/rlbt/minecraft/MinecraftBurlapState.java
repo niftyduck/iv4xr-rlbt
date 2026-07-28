@@ -115,9 +115,18 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
      * Recompute the whole abstraction from a fresh observation.
      *
      * Every argument is nullable, because that is how the underlying APIs report
-     * a missing observation: {@code MinecraftEnv.getMobHealth} returns null once
-     * the mob is dead or out of the testbench scan radius, and the distance is
-     * null whenever either position is unknown.
+     * a missing observation -- though the two sources do not share the same
+     * limit, and it matters:
+     *
+     * - the distance is null whenever either position is unknown, and the mob's
+     *   position comes from the nearbyEntities of /status, so it does go missing
+     *   past the testbench scan radius (10 blocks by default);
+     * - {@code MinecraftEnv.getMobHealth} does not: it goes through /tags/:uuid,
+     *   which runs the vanilla /data get entity command server-side, so it is
+     *   independent of how far away the agent is. It returns null when the
+     *   entity no longer exists (dead) -- or when the testbench call times out,
+     *   which is why DEAD is a trustworthy terminal signal but not an infallible
+     *   one (see PROJECT.md §2.7).
      *
      * The feature object is replaced rather than mutated: {@code GenericOOState}
      * is a shallow-copy state, so mutating in place would also alter every state

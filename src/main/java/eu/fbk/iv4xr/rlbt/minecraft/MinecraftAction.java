@@ -3,34 +3,43 @@ package eu.fbk.iv4xr.rlbt.minecraft;
 import java.io.Serializable;
 
 import burlap.mdp.core.action.Action;
-import eu.iv4xr.framework.mainConcepts.WorldEntity;
 
 /**
- * This class represents an action in the context of Minecraft. An action is a
- * command (verb) applied to a target entity or block of the WorldModel, e.g.
- * MOVE_TO block:16_65_3 or ATTACK entity:zombie:...
+ * An action of the Minecraft combat scenario. An action is a bare symbol: the
+ * command alone, with no target and no parameter.
+ *
+ * This is the agent-centric counterpart of the feature state: since the state
+ * holds no entity (see {@link MinecraftBurlapState}), there is nothing to
+ * enumerate targets from, and the action set is the same in every state. Who the
+ * enemy is, how close APPROACH gets and how long ATTACK waits are all decided by
+ * the environment, which owns the target tag and the timing constants.
+ *
+ * Keeping the target out of the action is not cosmetic: the action name is the
+ * column key of the Q-table. An identifier of the mob inside it would change at
+ * every episode, because the mob is re-summoned with a fresh UUID, and the agent
+ * would start from an empty row every time.
  */
 public class MinecraftAction implements Action, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * The commands correspond to the action primitives offered by MinecraftEnv
-	 * (moveTo, mine, attack, ...)
+	 * The fixed, agent-centric action set. The semantics below is what the
+	 * environment is expected to implement; this class only names it.
+	 *
+	 * APPROACH  move towards the current enemy, up to melee range
+	 * ATTACK    hit the current enemy, then wait out the weapon cooldown
+	 *           (as the baseline does, see MineAgentBaseline)
+	 * RETREAT   move away from the current enemy, along the line joining them
 	 */
 	public enum Command {
-		MOVE_TO, MINE, ATTACK
+		APPROACH, ATTACK, RETREAT
 	}
 
-	private Command command;
+	private final Command command;
 
-	private String targetId;
-
-	private WorldEntity targetEntity;
-
-	public MinecraftAction(Command command, String targetId) {
+	public MinecraftAction(Command command) {
 		this.command = command;
-		this.targetId = targetId;
 	}
 
 	/**
@@ -40,37 +49,14 @@ public class MinecraftAction implements Action, Serializable {
 		return command;
 	}
 
-	/**
-	 * @return the targetId
-	 */
-	public String getTargetId() {
-		return targetId;
-	}
-
-	/**
-	 * @return the targetEntity
-	 */
-	public WorldEntity getTargetEntity() {
-		return targetEntity;
-	}
-
-	/**
-	 * @param targetEntity the targetEntity to set
-	 */
-	public void setTargetEntity(WorldEntity targetEntity) {
-		this.targetEntity = targetEntity;
-	}
-
 	@Override
 	public String actionName() {
-		return command.name() + ":" + targetId;
+		return command.name();
 	}
 
 	@Override
 	public Action copy() {
-		MinecraftAction copy = new MinecraftAction(command, targetId);
-		copy.setTargetEntity(targetEntity);
-		return copy;
+		return new MinecraftAction(command);
 	}
 
 	@Override
@@ -81,13 +67,12 @@ public class MinecraftAction implements Action, Serializable {
 		if (!(obj instanceof MinecraftAction)) {
 			return false;
 		}
-		MinecraftAction other = (MinecraftAction) obj;
-		return command == other.command && targetId.equals(other.targetId);
+		return command == ((MinecraftAction) obj).command;
 	}
 
 	@Override
 	public int hashCode() {
-		return actionName().hashCode();
+		return command.hashCode();
 	}
 
 	@Override

@@ -6,18 +6,22 @@ import java.util.List;
 
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.action.ActionType;
-import burlap.mdp.core.oo.state.OOState;
-import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
-import eu.fbk.iv4xr.minecraftlib.StatusToWorldModel;
 import eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction.Command;
-import eu.iv4xr.framework.mainConcepts.WorldEntity;
 
 /**
- * Enumerates the actions applicable in a given Minecraft state. For every
- * entity/block observed in the WorldModel, the applicable commands depend on
- * its nature: blocks can be reached or mined, dynamic entities (mobs) can be
- * reached or attacked. The agent itself is never a target.
+ * The action set of the Minecraft combat scenario: a fixed, agent-centric list,
+ * the same in every state.
+ *
+ * The previous version enumerated the actions from the entities of the state,
+ * one MOVE_TO plus MINE/ATTACK per object. That is no longer possible, nor
+ * wanted: the state is now a single feature object and holds no entity (see
+ * {@link MinecraftBurlapState}), so there is nothing to enumerate from. It would
+ * also not scale, since every decorative block of the arena would add two
+ * actions to the list.
+ *
+ * The state is therefore ignored by {@link #allApplicableActions(State)}: which
+ * enemy an action applies to is resolved by the environment, not encoded here.
  */
 public class MinecraftActionType implements ActionType, Serializable {
 
@@ -25,48 +29,37 @@ public class MinecraftActionType implements ActionType, Serializable {
 
 	private String typeName = "minecraftAction";
 
+	/** One action per command, built once: they are immutable and stateless. */
+	private static final List<Action> FIXED_ACTIONS;
+	static {
+		List<Action> actions = new ArrayList<Action>();
+		for (Command command : Command.values()) {
+			actions.add(new MinecraftAction(command));
+		}
+		FIXED_ACTIONS = actions;
+	}
+
 	@Override
 	public String typeName() {
 		return typeName;
 	}
 
+	/**
+	 * Rebuilds an action from its name, i.e. from the command alone (see
+	 * {@link MinecraftAction#actionName()}). Needed to read back the serialised
+	 * Q-table and episodes.
+	 */
 	@Override
 	public Action associatedAction(String strRep) {
-		// action names have the form COMMAND:targetId, see MinecraftAction.actionName()
-		int sep = strRep.indexOf(':');
-		Command command = Command.valueOf(strRep.substring(0, sep));
-		return new MinecraftAction(command, strRep.substring(sep + 1));
+		return new MinecraftAction(Command.valueOf(strRep));
 	}
 
+	/**
+	 * @param s ignored: every action is applicable in every state
+	 */
 	@Override
 	public List<Action> allApplicableActions(State s) {
-		List<Action> actions = new ArrayList<Action>();
-		for (ObjectInstance object : ((OOState) s).objects()) {
-			// by convention the ObjectInstance returns the wrapped WorldEntity
-			// when queried with its own name (same convention as LabRecruitsEntityObject)
-			WorldEntity entity = (WorldEntity) object.get(object.name());
-
-			// the agent itself is not a possible target
-			if (StatusToWorldModel.AGENT_TYPE.equals(entity.type)) {
-				continue;
-			}
-
-			if (entity.dynamic) {
-				// mobs and other dynamic entities
-				addAction(actions, Command.MOVE_TO, entity);
-				addAction(actions, Command.ATTACK, entity);
-			} else {
-				// blocks
-				addAction(actions, Command.MOVE_TO, entity);
-				addAction(actions, Command.MINE, entity);
-			}
-		}
-		return actions;
-	}
-
-	private void addAction(List<Action> actions, Command command, WorldEntity entity) {
-		MinecraftAction action = new MinecraftAction(command, entity.id);
-		action.setTargetEntity(entity);
-		actions.add(action);
+		// a fresh list, so that a caller cannot alter the shared action set
+		return new ArrayList<Action>(FIXED_ACTIONS);
 	}
 }

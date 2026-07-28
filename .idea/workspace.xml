@@ -5,21 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f74444e7-4893-4528-b825-e1bffcf36688" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgentBaseline.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftBurlapState.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftEntityObject.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/target/test-classes/levels/arena.csv" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.csv" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/QLearningRL.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/QLearningRL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtMultiAgentMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtMultiAgentMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/labrecruits/LabRecruitsState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/labrecruits/LabRecruitsState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/resources/configurations/game.config" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/configurations/game.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftAction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftActionType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftActionType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/test/java/eu/fbk/iv4xr/minecraftlib/MinecraftGoalLibTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/test/java/eu/fbk/iv4xr/minecraftlib/MinecraftGoalLibTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench" afterDir="false" />
