@@ -6,6 +6,7 @@ import eu.fbk.iv4xr.minecraftlib.MinecraftEnv;
 import eu.fbk.iv4xr.minecraftlib.MinecraftGoalLib;
 import eu.fbk.iv4xr.minecraftlib.MinecraftState;
 import eu.fbk.iv4xr.minecraftlib.StatusToWorldModel;
+import eu.fbk.iv4xr.rlbt.configuration.MinecraftConfiguration;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -28,9 +29,22 @@ public class MineAgentBaseline {
     static String outputDir = currentDir + File.separator + "rlbt-files"+ File.separator + "minecraft-results";
     public static long systemtime = System.nanoTime();
 
+    static MinecraftConfiguration mineConfiguration = new MinecraftConfiguration();
+
     private static final String AGENT_ID = "Bot";
     private static final String MOB_TAG = "mob1";   // deve combaciare col tag nel CSV: @zombie^zombie
-    private static final int MAX_TICKS = 120;
+
+    /* Ticks a single goal may run before it is given up on, read from
+     * mineAgent.config (mine.max_ticks_per_action) so that the baseline and the
+     * RL run share the budget they are compared on. Assigned when the test
+     * starts, not here: the configuration file is loaded in main(), after this
+     * object has been built. */
+    private int maxTicks;
+
+    /* Attacks the scripted loop performs at most. Deliberately NOT
+     * mine.max_actions_per_episode: that budget counts RL actions of any kind,
+     * this one only counts hits, and tying them together would silently change
+     * what every past baseline run measured. */
     private static final int MAX_ITERATIONS = 10;
 
     // damage taken, accumulated per-tick across all phases (regen-robust, unlike boundary sampling)
@@ -58,6 +72,7 @@ public class MineAgentBaseline {
 
     public void executeBaselineTest(String testbenchUrl, String levelCsv) {
         System.out.println("-------------------------- Starting Baseline on Minecraft ---------------------");
+        maxTicks = (int) mineConfiguration.getParameterValue("mine.max_ticks_per_action");
         MinecraftEnv env = new MinecraftEnv(testbenchUrl);
         MinecraftState state = new MinecraftState();
         MinecraftGoalLib goalLib = new MinecraftGoalLib();
@@ -165,7 +180,7 @@ public class MineAgentBaseline {
     }
 
     /**
-     * Execute a goal by advancing (tick) the agent until the goal is completed or MAX_TICKS is reached.
+     * Execute a goal by advancing (tick) the agent until the goal is completed or maxTicks is reached.
      * On every tick it reads the current state and writes a row to {@code ticks.csv} (and prints a line).
      *
      * @param agent   the TestAgent
@@ -183,7 +198,7 @@ public class MineAgentBaseline {
         agent.setGoal(g);
         state.updateState(AGENT_ID);
         int k = 0;
-        while (g.getStatus().inProgress() && k < MAX_TICKS) {
+        while (g.getStatus().inProgress() && k < maxTicks) {
             agent.update();   // every update() the agent executes an action (blocking server-side)
             k++;
             tick++;
@@ -249,6 +264,9 @@ public class MineAgentBaseline {
      * Connect to a running MineflayerTestbench server and build the arena level.
      * @param args [0] = testbench URL (default localhost:3000),
      *             [1] = level csv path (default the arena example),
+     *             [2] = Minecraft SUT config file, i.e. mineAgent.config
+     *                   (optional; without it the in-code defaults of
+     *                   MinecraftConfiguration apply)
     */
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         MineAgentBaseline main = new MineAgentBaseline();
@@ -256,6 +274,13 @@ public class MineAgentBaseline {
         // Get the testbench URL and level CSV path from command line arguments or use defaults
         String testbenchUrl = args.length > 0 ? args[0] : defaultTestbenchUrl;
         String levelCsv = args.length > 1 ? args[1] : defaultLevelCsv;
+
+        // Load the Minecraft SUT parameters (tick budget) from file
+        if (args.length > 2 && args[2] != null) {
+            System.out.println("Loading Minecraft configuration: " + args[2]);
+            if (!mineConfiguration.updateParameters(args[2]))
+                throw new RuntimeException("Cannot load Minecraft configuration " + args[2]);
+        }
 
         // Generate new folder for each run, following Lab Recruits' level system
         String levelName = new File(levelCsv).getName().replaceFirst("\\.csv$", "");

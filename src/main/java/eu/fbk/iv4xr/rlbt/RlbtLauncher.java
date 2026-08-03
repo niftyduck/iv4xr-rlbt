@@ -78,9 +78,6 @@ public class RlbtLauncher {
 		// Configuration files
 		boolean baselineFlag = baselineFlag(gameConfig.getProperty("game.mineAgentUseBaseline", "false"));
 		String sutConfigPath = gameConfig.getProperty("game.mineAgentSutConfig");
-		// Minecraft gets its own BURLAP file: the two SUTs differ in state space
-		// and in what an episode costs, so one shared file would mean tuning one
-		// of them retunes the other. Falls back to the LabRecruits one if unset.
 		String mineBurlapConfig = gameConfig.getProperty("game.mineAgentBurlapConfig", burlapConfig);
 		Properties mineConfig = new Properties();
 		try (InputStream in = new FileInputStream(sutConfigPath)) {
@@ -108,7 +105,7 @@ public class RlbtLauncher {
 			System.out.println("[MODE] Selected baselineMode for MineAgent: this is a scripted version just for comparison.");
 			try {
 				waitForTestbench(testbenchUrl, 60);
-				MineAgentBaseline.main(new String[] { testbenchUrl, levelPath });
+				MineAgentBaseline.main(new String[] { testbenchUrl, levelPath, sutConfigPath });
 			} finally {
 				// npm spawns node as a child process: kill the whole tree
 				testbench.descendants().forEach(ProcessHandle::destroy);
@@ -118,7 +115,7 @@ public class RlbtLauncher {
 			System.out.println("[MODE] Selected " + modeFlag + " for MineAgent.");
 			try {
 				waitForTestbench(testbenchUrl, 60);
-				MineAgent.main(new String[] { testbenchUrl, levelPath, modeFlag, mineBurlapConfig });
+				MineAgent.main(new String[] { testbenchUrl, levelPath, modeFlag, mineBurlapConfig, sutConfigPath });
 			} finally {
 				testbench.descendants().forEach(ProcessHandle::destroy);
 				testbench.destroy();

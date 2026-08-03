@@ -10,23 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * The single feature object held by a {@link MinecraftBurlapState}: the whole RL
- * state as a handful of already-bucketised combat variables.
- *
- * Why an {@link ObjectInstance} rather than plain fields on the state: BURLAP's
- * {@code IISimpleHashableState} branches on {@code instanceof OOState} and, for
- * an OO state, hashes by walking {@code objects()} and reading each object's own
- * {@code variableKeys()}. It never looks at the variable keys of the state
- * itself. Keeping the features inside an object is therefore what lets the
- * built-in {@code SimpleHashableStateFactory} see them, and spares us a
- * Minecraft-specific hashable state.
- *
- * Instances are treated as immutable by {@link MinecraftBurlapState}, which
- * replaces the whole object on every update rather than mutating in place:
- * {@code GenericOOState} is a shallow-copy state, so a copied state shares this
- * object with its original.
- */
+/** The single feature object held by a {@link MinecraftBurlapState}: the whole RL
+ * state as a handful of already-bucketised combat variables */
 public class MinecraftFeatureObject implements ObjectInstance, MutableState, Serializable {
 
     private static final long serialVersionUID = 1L;

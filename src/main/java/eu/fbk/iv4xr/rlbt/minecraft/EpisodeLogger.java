@@ -6,21 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.HPBucket;
 import eu.iv4xr.framework.spatial.Vec3;
 
-/**
- * Writes the two per-session CSVs of a baseline run:
- * <ul>
- *   <li><b>ticks.csv</b>   — one row per tick (state telemetry: own/mob HP and position, distance)</li>
- *   <li><b>actions.csv</b> — one row per performed action (action-centric: what the agent did,
- *       on which target, and the resulting effect). Mirrors the idea of LabRecruits'
- *       {@code RLActionToTestCaseEncoder}, but incremental and combat-oriented.</li>
- * </ul>
- * Rows are flushed incrementally; call {@link #close()} at the end of the session
- * (or use try-with-resources).
- *
- * @author generated for the Minecraft baseline (PROJECT.md, step 2.6)
- */
 public class EpisodeLogger implements AutoCloseable {
 
     private static final String TICKS_HEADER =
@@ -28,19 +16,15 @@ public class EpisodeLogger implements AutoCloseable {
 
     private static final String ACTIONS_HEADER =
             "id,episode,action,target,param,goal_status,"
-          + "mob_hp_before,mob_hp_after,damage_dealt,"
-          + "own_hp_before,own_hp_after,damage_taken,hit_landed";
+          + "mob_hp_before,mob_hp_after,mob_hp_bucket_before,mob_hp_bucket_after,damage_dealt,"
+          + "own_hp_before,own_hp_after,own_hp_bucket_before,own_hp_bucket_after,damage_taken,"
+          + "hit_landed";
 
     private final BufferedWriter ticks;
     private final BufferedWriter actions;
     private int actionId = 1;
 
-    /**
-     * Open (creating/overwriting) {@code ticks.csv} and {@code actions.csv} in the given
-     * session directory and write their headers.
-     *
-     * @param sessionDir the already-created output directory of this run
-     */
+    /** Open ticks.csv and actions.csv in the given session directory and write their headers */
     public EpisodeLogger(File sessionDir) {
         try {
             ticks   = new BufferedWriter(new FileWriter(new File(sessionDir, "ticks.csv")));
@@ -52,10 +36,8 @@ public class EpisodeLogger implements AutoCloseable {
         }
     }
 
-    /**
-     * One row of state telemetry: call it every tick.
-     * Positions are split into x/y/z columns so no comma leaks into a cell; nulls become empty cells.
-     */
+    /** One row of state telemetry: call it every tick.
+     * Positions are split into x/y/z columns so no comma leaks into a cell; nulls become empty cells */
     public void logTick(int episode, int tick, String phase, String goalStatus,
                         Float ownHp, Vec3 ownPos, Float mobHp, Vec3 mobPos, Double dist) {
         writeRow(ticks, join(
@@ -64,20 +46,28 @@ public class EpisodeLogger implements AutoCloseable {
                 num(mobHp), x(mobPos), y(mobPos), z(mobPos), num(dist)));
     }
 
-    /**
-     * One row per performed action. {@code damage_dealt}, {@code damage_taken} and
-     * {@code hit_landed} are derived from the before/after HP (a hit "lands" iff it dealt
-     * damage — note this can differ from {@code goal_status == SUCCESS}, see PROJECT.md step 5).
-     */
+    /** One row per performed action. */
     public void logAction(int episode, String action, String target, String param, String goalStatus,
-                          Float mobHpBefore, Float mobHpAfter, Float ownHpBefore, Float ownHpAfter) {
+                          Float mobHpBefore, Float mobHpAfter,
+                          HPBucket mobBucketBefore, HPBucket mobBucketAfter,
+                          Float ownHpBefore, Float ownHpAfter,
+                          HPBucket ownBucketBefore, HPBucket ownBucketAfter) {
         Float dealt = (mobHpBefore != null && mobHpAfter != null) ? mobHpBefore - mobHpAfter : null;
         Float taken = (ownHpBefore != null && ownHpAfter != null) ? ownHpBefore - ownHpAfter : null;
         boolean hitLanded = dealt != null && dealt > 0f;
         writeRow(actions, join(
                 num(actionId++), num(episode), csv(action), csv(target), csv(param), csv(goalStatus),
-                num(mobHpBefore), num(mobHpAfter), num(dealt),
-                num(ownHpBefore), num(ownHpAfter), num(taken), String.valueOf(hitLanded)));
+                num(mobHpBefore), num(mobHpAfter), name(mobBucketBefore), name(mobBucketAfter), num(dealt),
+                num(ownHpBefore), num(ownHpAfter), name(ownBucketBefore), name(ownBucketAfter), num(taken),
+                String.valueOf(hitLanded)));
+    }
+
+    /** Same row without the bucket columns, which are left empty */
+    public void logAction(int episode, String action, String target, String param, String goalStatus,
+                          Float mobHpBefore, Float mobHpAfter, Float ownHpBefore, Float ownHpAfter) {
+        logAction(episode, action, target, param, goalStatus,
+                mobHpBefore, mobHpAfter, null, null,
+                ownHpBefore, ownHpAfter, null, null);
     }
 
     @Override
@@ -86,12 +76,8 @@ public class EpisodeLogger implements AutoCloseable {
         closeQuietly(actions);
     }
 
-    /////////////////////////////////////////////////////
-    ///
-    /// Helpers
-    ///
-    /////////////////////////////////////////////////////
 
+    /// Helpers
     private static void writeRow(BufferedWriter w, String row) {
         try {
             w.write(row);
@@ -110,26 +96,28 @@ public class EpisodeLogger implements AutoCloseable {
         return n == null ? "" : n.toString();
     }
 
+    /** An enum value as its name, or an empty cell when it is not available. */
+    private static String name(Enum<?> e) {
+        return e == null ? "" : e.name();
+    }
+
     private static String x(Vec3 v) { return v == null ? "" : Float.toString(v.x); }
     private static String y(Vec3 v) { return v == null ? "" : Float.toString(v.y); }
     private static String z(Vec3 v) { return v == null ? "" : Float.toString(v.z); }
 
-    /** Quote a field only if it contains comma, quote or newline (RFC-4180-ish). */
+    /** Quote a field only if it contains comma, quote or newline */
     private static String csv(String s) {
-        if (s == null) {
+        if (s == null)
             return "";
-        }
-        if (s.contains(",") || s.contains("\"") || s.contains("\n")) {
+        if (s.contains(",") || s.contains("\"") || s.contains("\n"))
             return "\"" + s.replace("\"", "\"\"") + "\"";
-        }
         return s;
     }
 
     private static void closeQuietly(BufferedWriter w) {
         try {
-            if (w != null) {
+            if (w != null)
                 w.close();
-            }
         } catch (IOException ignored) {
             // best effort on close
         }

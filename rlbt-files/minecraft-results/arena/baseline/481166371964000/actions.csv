@@ -1,7 +1,0 @@
-id,episode,action,target,param,goal_status,mob_hp_before,mob_hp_after,damage_dealt,own_hp_before,own_hp_after,damage_taken,hit_landed
-1,1,MOVE_TO,mob1,2.0,SUCCESS. Solved by move_to mob1,20.0,20.0,0.0,20.0,18.5,1.5,false
-2,1,ATTACK,mob1,,SUCCESS. Solved by wait 20,20.0,14.096,5.9040003,18.5,20.0,-1.5,true
-3,1,ATTACK,mob1,,SUCCESS. Solved by wait 20,14.096,8.191999,5.9040003,20.0,20.0,0.0,true
-4,1,ATTACK,mob1,,SUCCESS. Solved by wait 20,8.191999,8.191999,0.0,20.0,20.0,0.0,false
-5,1,ATTACK,mob1,,SUCCESS. Solved by wait 20,8.191999,2.2879992,5.9040003,20.0,20.0,0.0,true
-6,1,ATTACK,mob1,,SUCCESS. Solved by wait 20,2.2879992,0.0,2.2879992,20.0,20.0,0.0,true

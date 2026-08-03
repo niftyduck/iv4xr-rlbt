@@ -1,3 +1,0 @@
-Hits attempted: 5 | Hits landed: 4 | Efficiency: 0.8
-Total damage dealt: 20.0 | Total damage taken: 1.5 | Killed: true
-Ticks to kill: 10

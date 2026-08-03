@@ -1,0 +1,66 @@
+
+
+=====================Q-Table========================================
+Qtable size = 12
+----------------------------------------------------------------------------
+State = [CONTACT|HIGH|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 0.7349998474121093
+action: RETREAT	value: 0.1
+State = [CONTACT|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 0.7497499666213989
+action: RETREAT	value: 0.07500000000000001
+State = [MEDIUM|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.26965017604351044
+action: ATTACK	value: 0.18341247749328612
+action: RETREAT	value: 0.1
+State = [CONTACT|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.18341247749328612
+action: ATTACK	value: 1.1576839195209785
+action: RETREAT	value: 0.1
+State = [MELEE|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 2.6932345639378186
+action: RETREAT	value: 0.08975
+State = [MEDIUM|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 0.1
+action: RETREAT	value: -1.1749999999999998
+State = [NEAR|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.2536593356132507
+action: ATTACK	value: 0.7349998474121093
+action: RETREAT	value: 0.17572497749328614
+State = [MELEE|HIGH|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.8579443500031021
+action: ATTACK	value: 3.188932529163551
+action: RETREAT	value: 0.1
+State = [MELEE|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.18558812007665634
+action: ATTACK	value: 1.3796761317354442
+action: RETREAT	value: 0.06046818578348011
+State = [NEAR|HIGH|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.07500000000000001
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [NEAR|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.08975
+action: ATTACK	value: 0.519191800544858
+action: RETREAT	value: 0.1
+State = [FAR|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: -1.585337522506714
+action: ATTACK	value: 0.0874663091802597
+action: RETREAT	value: 0.080550625
+----------------------------------------------------------------------------

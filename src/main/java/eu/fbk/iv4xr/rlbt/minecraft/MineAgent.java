@@ -2,6 +2,7 @@ package eu.fbk.iv4xr.rlbt.minecraft;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,9 @@ import eu.fbk.iv4xr.minecraftlib.MinecraftEnv;
 import eu.fbk.iv4xr.rlbt.QLearningRL;
 import eu.fbk.iv4xr.rlbt.RlbtMain;
 import eu.fbk.iv4xr.rlbt.configuration.BurlapConfiguration;
+import eu.fbk.iv4xr.rlbt.configuration.MinecraftConfiguration;
 import eu.fbk.iv4xr.rlbt.distance.NoStateSimilarity;
+import eu.fbk.iv4xr.rlbt.utils.SerializationUtil;
 import eu.iv4xr.framework.spatial.Vec3;
 
 public class MineAgent {
@@ -24,7 +27,11 @@ public class MineAgent {
 	static String defaultGameMode = "training";
 
 	static BurlapConfiguration burlapConfiguration = new BurlapConfiguration();
+	static MinecraftConfiguration mineConfiguration = new MinecraftConfiguration();
 
+	static String currentDir = System.getProperty("user.dir");
+	static String outputDir = currentDir + File.separator + "rlbt-files" + File.separator + "minecraft-results";
+	public static long systemtime = System.nanoTime();
 
 	private static void executeDeepQLearningTrainingOnMinecraft(String testbenchUrl, String levelCsv) throws InterruptedException, FileNotFoundException {
 		MinecraftEnv minecraftEnv = new MinecraftEnv(testbenchUrl);
@@ -34,32 +41,21 @@ public class MineAgent {
 		final SADomain domain = (SADomain) mcDomainGenerator.generateDomain();
 	}
 
-
-	/**
-	 * Q-learning training on Minecraft, smoke-run version.
-	 *
-	 * Deliberately the shortest thing that exercises the whole stack end to end,
-	 * because nothing above MinecraftEnv has ever run against the real SUT: no
-	 * Q-table/episode saving, no coverage, no summary. Those come back with step
-	 * 8 proper, once this has produced the numbers step 7 needs -- cost of a
-	 * reset, how often getMobHealth times out, whether MAX_TICKS_PER_ACTION is
-	 * anywhere near right.
-	 *
-	 * Modelled on RlbtMain:63-134, minus everything that only matters once the
-	 * run is known to work.
-	 */
 	private static List<Episode> executeQLearningTrainingOnMinecraft(String testbenchUrl, String levelCsv) throws InterruptedException, FileNotFoundException {
-		// one single MinecraftEnv: it carries the tag cache buildLevel fills in,
-		// and the environment needs it to resolve the mob (PROJECT.md §2.2)
 		MinecraftEnv minecraftEnv = new MinecraftEnv(testbenchUrl);
 		initializeLevel(testbenchUrl, levelCsv, minecraftEnv);
 		DomainGenerator mcDomainGenerator = new MinecraftDomainGenerator();
 		final SADomain domain = (SADomain) mcDomainGenerator.generateDomain();
 
-		MinecraftRLEnvironment mcRlEnvironment = new MinecraftRLEnvironment(minecraftEnv);
+		MinecraftRLEnvironment mcRlEnvironment = new MinecraftRLEnvironment(minecraftEnv, mineConfiguration);
 
-		// from burlap_minecraft.config via game.mineAgentBurlapConfig; 3 while
-		// this is a smoke run, raise it once the run is known to work
+		File sessionDir = new File(outputDir);
+		if (!sessionDir.exists() && !sessionDir.mkdirs()) {
+			throw new RuntimeException("Unable to create output directory: " + sessionDir);
+		}
+		System.out.println("Writing results to: " + sessionDir);
+
+		// Get number of episodes from burlap_minecraft.config
 		int numEpisodes = (int)burlapConfiguration.getParameterValue("burlap.num_of_episodes");
 		System.out.println("Episodes: " + numEpisodes);
 
@@ -70,16 +66,6 @@ public class MineAgent {
 		burlapConfiguration.setParameterValue("burlap.qlearning.decayedepsilonstep", Double.toString(calculatedDecayVal));  // set calculated decayed value according to number of episodes
 		System.out.println("epsilon val ="+epsilonval+ "  decay = "+calculatedDecayVal);
 
-		/* Same constructor as RlbtMain:84, with the two Minecraft-specific
-		 * arguments (PROJECT.md §2.8, §2.9):
-		 *  - SimpleHashableStateFactory, BURLAP's built-in: the feature object
-		 *    holds primitive buckets, so the OO branch of the hashing works as
-		 *    is. RlbtSimpleHashableState switches on LabRecruits entity types
-		 *    and would make every state look different.
-		 *  - NoStateSimilarity instead of JaccardDistance, which casts to
-		 *    LabRecruitsState. Subsumption is not wanted here anyway: the
-		 *    bucketing already generalises, merging states would collapse
-		 *    bands kept apart on purpose. */
 		QLearningRL agent = new QLearningRL(domain,
 				(double)burlapConfiguration.getParameterValue("burlap.qlearning.gamma"),
 				new SimpleHashableStateFactory(),
@@ -91,35 +77,100 @@ public class MineAgent {
 				new NoStateSimilarity());
 
 		List<Episode> episodes = new ArrayList<Episode>(numEpisodes);
-		int maxActionsPerEpisode = MinecraftRLEnvironment.maxActionsPerEpisode();
+		List<Long> episodeTime = new ArrayList<Long>(numEpisodes);
+
+		// the three already-formatted coverage cells of each episode, see below
+		List<String> episodeCoverage = new ArrayList<String>(numEpisodes);
+		int maxActionsPerEpisode = mcRlEnvironment.maxActionsPerEpisode();
 
 		/*------------Training - start running episodes------------------------*/
-		// the first episode has no reset before it: this equips the sword and
-		// takes the first observation, as RlbtMain does for LabRecruits
-		mcRlEnvironment.startAgentEnvironment();
-		for (int i = 0; i < numEpisodes; i++) {
-			System.out.println("---------------- Episode " + (i + 1) + "/" + numEpisodes + " ----------------");
-			long startTime = System.currentTimeMillis();
-			episodes.add(agent.runLearningEpisode(mcRlEnvironment, maxActionsPerEpisode));
-			System.out.println("Time for this episode: " + (System.currentTimeMillis() - startTime) + " ms");
+		try (EpisodeLogger log = new EpisodeLogger(sessionDir)) {
+			mcRlEnvironment.setLogger(log);
 
-			// rebuilds the arena through the testbench and re-equips the sword.
-			// Timed separately: the cost of a reset is the one unknown left, and
-			// it is what decides whether 50 episodes are affordable at all.
-			long resetStart = System.currentTimeMillis();
-			mcRlEnvironment.resetEnvironment();
-			System.out.println("Time for the reset: " + (System.currentTimeMillis() - resetStart) + " ms");
+			mcRlEnvironment.startAgentEnvironment();
+			for (int i = 0; i < numEpisodes; i++) {
+				System.out.println("---------------- Episode " + (i + 1) + "/" + numEpisodes + " ----------------");
+				long startTime = System.currentTimeMillis();
+				episodes.add(agent.runLearningEpisode(mcRlEnvironment, maxActionsPerEpisode));
+				long elapsed = System.currentTimeMillis() - startTime;
+				episodeTime.add(elapsed);
+				System.out.println("Time for this episode: " + elapsed + " ms");
+
+				/* Read the episode coverage here and not after the loop: the
+				 * reset below starts the next episode, which clears it. */
+				episodeCoverage.add(mcRlEnvironment.episodeOwnHpCoverage() + ","
+						+ mcRlEnvironment.episodeMobHpCoverage() + ","
+						+ mcRlEnvironment.episodeActionsCoverage());
+
+				// Rebuilds the arena through the testbench and re-equips the sword.
+				long resetStart = System.currentTimeMillis();
+				mcRlEnvironment.resetEnvironment();
+				System.out.println("Time for the reset: " + (System.currentTimeMillis() - resetStart) + " ms");
+			}
 		}
 
-		agent.printFinalQtable(System.out);
+		saveSession(agent, episodes, episodeTime, episodeCoverage, mcRlEnvironment, sessionDir);
 		return episodes;
+	}
+
+
+	/** Write everything the session produced next to the CSVs
+	 *  the environment has already been filling in. */
+	private static void saveSession(QLearningRL agent, List<Episode> episodes, List<Long> episodeTime,
+			List<String> episodeCoverage, MinecraftRLEnvironment env, File sessionDir)
+			throws FileNotFoundException {
+
+		agent.printFinalQtable(System.out);
+
+		// .ser to reload it (testing mode, or resuming), .txt to read it
+		String qtableFile = sessionDir + File.separator + "qtable.ser";
+		agent.serializeQTable(qtableFile);
+		agent.printFinalQtable(new PrintStream(qtableFile + ".txt"));
+
+		SerializationUtil.serializeEpisodes(episodes, sessionDir + File.separator + "episode");
+
+		writeEpisodeSummary(episodes, episodeTime, episodeCoverage,
+				new File(sessionDir, "episodeSummary.txt"));
+		writeSummaryTxt(env, episodes.size(), new File(sessionDir, "summary.txt"));
+
+		System.out.println("Session written to: " + sessionDir);
+	}
+
+
+	/** Per-episode figures: actions taken, total reward, wall-clock time and the
+	 * three simple coverage metrics */
+	private static void writeEpisodeSummary(List<Episode> episodes, List<Long> episodeTime,
+			List<String> episodeCoverage, File outFile) throws FileNotFoundException {
+		try (PrintStream ps = new PrintStream(outFile)) {
+			ps.println("episode,actions,total_reward,time_ms,own_hp_cov,mob_hp_cov,actions_cov");
+			for (int i = 0; i < episodes.size(); i++) {
+				Episode e = episodes.get(i);
+				double totalReward = 0;
+				for (Double r : e.rewardSequence)
+					totalReward += r;
+				ps.println((i + 1) + "," + e.actionSequence.size() + "," + totalReward + ","
+						+ episodeTime.get(i) + "," + episodeCoverage.get(i));
+			}
+		}
+	}
+
+	/** The combat summary, in the same shape as MineAgentBaseline's summary.txt so
+	 * the two runs can be compared field by field */
+	private static void writeSummaryTxt(MinecraftRLEnvironment env, int numEpisodes, File outFile)
+			throws FileNotFoundException {
+		try (PrintStream ps = new PrintStream(outFile)) {
+			ps.print(env.summary());
+			// the count comes from here, not from the environment: see the note on
+			// MinecraftRLEnvironment.summary()
+			ps.println("Episodes: " + numEpisodes);
+		}
+		System.out.println("Successfully wrote summary to: " + outFile);
 	}
 
 
 	private void executeTraining(String testbenchUrl, String levelCsv) throws FileNotFoundException, InterruptedException {
 		System.out.println("-------------------------- Starting Training on Minecraft ---------------------");
 		String alg = (String)burlapConfiguration.getParameterValue("burlap.algorithm");
-
 
 		if (alg.equalsIgnoreCase(RlbtMain.BurlapAlgorithm.QLearning.toString()))
 			executeQLearningTrainingOnMinecraft(testbenchUrl, levelCsv);
@@ -133,7 +184,6 @@ public class MineAgent {
 	public void executeTesting(String testbenchUrl, String levelCsv) {
 		System.out.println("-------------------------- !TESTING HAS NOT BEEN IMPLEMENTED YET! --------------------------");
 	}
-
 
 	/**
 	 * Connect to the testbench and build the level
@@ -150,21 +200,6 @@ public class MineAgent {
 		System.out.println("Arena built. Tags: " + tags);
 	}
 
-
-	/**
-	 * Normalise the mode string, which reaches this class in two dialects.
-	 *
-	 * RlbtLauncher.toModeFlag turns game.mode into "trainingMode"/"testingMode"/
-	 * "randomMode", because that is the vocabulary RlbtMain's command line wants,
-	 * while this class documents and takes the bare "training"/"testing"/"random".
-	 * Matching only the bare form meant every launcher-started run fell through to
-	 * the default branch, i.e. the random one -- so half of them printed "testing
-	 * has not been implemented" and exited. Silent, and easy to mistake for the
-	 * training simply not producing output.
-	 *
-	 * Accepting both keeps the launcher untouched (its spelling is what
-	 * LabRecruits needs) and keeps java -cp ... MineAgent training working.
-	 */
 	private static String normalizeMode(String mode) {
 		return mode.endsWith("Mode") ? mode.substring(0, mode.length() - "Mode".length()) : mode;
 	}
@@ -177,6 +212,9 @@ public class MineAgent {
 	 *                   used by RlbtLauncher is accepted too),
 	 *             [3] = BURLAP config file (optional; without it the in-code
 	 *                   defaults of BurlapConfiguration apply)
+	 *             [4] = Minecraft SUT config file, i.e. mineAgent.config
+	 *                   (optional; without it the in-code defaults of
+	 *                   MinecraftConfiguration apply)
 	 */
 	public static void main(String[] args) throws FileNotFoundException, InterruptedException {
 		MineAgent main = new MineAgent();
@@ -186,15 +224,23 @@ public class MineAgent {
 		String levelCsv = args.length > 1 ? args[1] : defaultLevelCsv;
 		String mode = normalizeMode(args.length > 2 ? args[2] : defaultGameMode);
 
-		// Load the BURLAP parameters from file, as RlbtMain does for LabRecruits.
-		// Until this existed, RlbtLauncher read game.burlapConfig and dropped it on
-		// the floor for Minecraft, so episodes and epsilon could only be changed by
-		// editing the code.
+		// outputDir = rlbt-files/minecraft-results/<level>/rlbt/<systemtime>
+		String levelName = new File(levelCsv).getName().replaceFirst("\\.csv$", "");
+		outputDir = outputDir + File.separator + levelName + File.separator + "rlbt"
+				+ File.separator + systemtime;
+
+		// Load the BURLAP parameters from file
 		if (args.length > 3 && args[3] != null) {
 			System.out.println("Loading BURLAP configuration: " + args[3]);
-			if (!burlapConfiguration.updateParameters(args[3])) {
+			if (!burlapConfiguration.updateParameters(args[3]))
 				throw new RuntimeException("Cannot load BURLAP configuration " + args[3]);
-			}
+		}
+
+		// Load the Minecraft SUT parameters (episode budgets) from file
+		if (args.length > 4 && args[4] != null) {
+			System.out.println("Loading Minecraft configuration: " + args[4]);
+			if (!mineConfiguration.updateParameters(args[4]))
+				throw new RuntimeException("Cannot load Minecraft configuration " + args[4]);
 		}
 
 		switch(mode) {

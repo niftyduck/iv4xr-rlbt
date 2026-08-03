@@ -687,26 +687,22 @@ public class QLearningRL extends MDPSolver implements QProvider, LearningAgent, 
 	@Override
 	public Episode runLearningEpisode(Environment env) {
 		return this.runLearningEpisode(env, -1);
-		//return this.runLearningEpisode(env, 20);
 	}
 
-	
-   
 	@Override
 	public Episode runLearningEpisode(Environment env, int maxSteps) {	
 		System.out.println("----------QlearningRL : Starting runLearningEpisode()----------------------");
 		State initialState = env.currentObservation();		
 		Episode ea = new Episode(initialState);
-		HashableState curState = this.stateHash(initialState);
-//		System.out.println("Hashed state = " +curState);
-		//System.out.println("In runLearningEpisode() - Starting while() loop");
-		
-		eStepCounter = 0;
+		HashableState curState;
+        curState = this.stateHash(initialState);
 
+		eStepCounter = 0;
 		maxQChangeInLastEpisode = 0.;
-		//while(!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)){
+
 		while(!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)){
 			System.out.println("==================Qlearning - Next turn for this episode==================================");
+
 			// cast to OOState only: every SUT state is one, and nothing below needs the
 			// concrete type. Downcasting per-SUT here would just move the coupling.
 			// NOTE: the guard means "empty observation". It fits LabRecruits, whose state is
