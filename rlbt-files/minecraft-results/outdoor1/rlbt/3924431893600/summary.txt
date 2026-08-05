@@ -1,7 +1,0 @@
-Hits attempted: 25 | Hits landed: 23 | Efficiency: 0.92
-Total damage dealt: 58.479996 | Total damage taken: 48.666668 | Mob kills: 2
-Agent deaths: 1
-Own HP coverage: 4/4 (100%) [DEAD, LOW, MEDIUM, HIGH]
-Mob HP coverage: 4/4 (100%) [DEAD, LOW, MEDIUM, HIGH]
-Actions coverage: 3/3 (100%) [APPROACH, ATTACK, RETREAT]
-Episodes: 3

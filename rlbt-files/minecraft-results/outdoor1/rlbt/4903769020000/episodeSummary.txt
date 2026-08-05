@@ -1,4 +1,0 @@
-episode,actions,total_reward,time_ms,own_hp_cov,mob_hp_cov,actions_cov
-1,19,16.0,15796,1/4,4/4,3/3
-2,18,9.479997158050537,28015,3/4,3/4,3/3
-3,13,17.0,11393,1/4,4/4,3/3

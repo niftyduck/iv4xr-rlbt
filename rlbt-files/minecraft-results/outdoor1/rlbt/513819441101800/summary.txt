@@ -1,4 +1,0 @@
-Hits attempted: 29 | Hits landed: 20 | Efficiency: 0.6896552
-Total damage dealt: 50.559998 | Total damage taken: 54.166664 | Mob kills: 2
-Agent deaths: 1
-Episodes: 3

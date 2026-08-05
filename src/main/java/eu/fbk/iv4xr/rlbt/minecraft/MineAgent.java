@@ -98,9 +98,11 @@ public class MineAgent {
 
 				/* Read the episode coverage here and not after the loop: the
 				 * reset below starts the next episode, which clears it. */
-				episodeCoverage.add(mcRlEnvironment.episodeOwnHpCoverage() + ","
+				episodeCoverage.add(mcRlEnvironment.episodeDistanceCoverage() + ","
+						+ mcRlEnvironment.episodeOwnHpCoverage() + ","
 						+ mcRlEnvironment.episodeMobHpCoverage() + ","
-						+ mcRlEnvironment.episodeActionsCoverage());
+						+ mcRlEnvironment.episodeActionsCoverage() + ","
+						+ mcRlEnvironment.cumulativeStateActionCoverage());
 
 				// Rebuilds the arena through the testbench and re-equips the sword.
 				long resetStart = System.currentTimeMillis();
@@ -137,12 +139,13 @@ public class MineAgent {
 	}
 
 
-	/** Per-episode figures: actions taken, total reward, wall-clock time and the
-	 * three simple coverage metrics */
+	/** Per-episode figures: actions taken, total reward, wall-clock time, the four simple
+	 * coverage metrics and the state-action coverage reached up to that episode */
 	private static void writeEpisodeSummary(List<Episode> episodes, List<Long> episodeTime,
 			List<String> episodeCoverage, File outFile) throws FileNotFoundException {
 		try (PrintStream ps = new PrintStream(outFile)) {
-			ps.println("episode,actions,total_reward,time_ms,own_hp_cov,mob_hp_cov,actions_cov");
+			ps.println("episode,actions,total_reward,time_ms,"
+					+ "dist_cov,own_hp_cov,mob_hp_cov,actions_cov,state_action_cov_cumulative");
 			for (int i = 0; i < episodes.size(); i++) {
 				Episode e = episodes.get(i);
 				double totalReward = 0;

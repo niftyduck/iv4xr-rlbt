@@ -10,49 +10,47 @@
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor1.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209421609218100/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209421609218100/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209421609218100/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209624128259500/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209624128259500/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/209624128259500/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210005420985100/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210005420985100/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210005420985100/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210025852568500/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210025852568500/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210025852568500/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210048598737300/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210048598737300/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210048598737300/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210271494009500/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210271494009500/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210271494009500/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210564529955300/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210564529955300/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/210564529955300/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/433476038074100/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/433476038074100/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/477254796234500/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/477254796234500/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/480359349519600/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/480359349519600/heatmap.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/480359349519600/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/480359349519600/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/481166371964000/actions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/481166371964000/summary.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/arena/baseline/481166371964000/ticks.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/QLearningRL.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/QLearningRL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/RlbtLauncher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/actions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/episodeSummary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/episode_1.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/episode_2.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/episode_3.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/qtable.ser" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/qtable.ser.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/summary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/3924431893600/ticks.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/actions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/episodeSummary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/episode_1.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/episode_2.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/episode_3.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/qtable.ser" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/qtable.ser.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/summary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/4903769020000/ticks.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/actions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/episodeSummary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/episode_1.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/episode_2.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/episode_3.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/qtable.ser" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/qtable.ser.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/summary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/513819441101800/ticks.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/actions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/episodeSummary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/episode_1.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/episode_2.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/episode_3.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/qtable.ser" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/qtable.ser.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/summary.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rlbt-files/minecraft-results/outdoor1/rlbt/8593578114800/ticks.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/EpisodeLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/EpisodeLogger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgentBaseline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgentBaseline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftActionType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftActionType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftBurlapState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftBurlapState.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftFeatureObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftFeatureObject.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/resources/configurations/burlap_minecraft.config" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/configurations/burlap_minecraft.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftState.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftState.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/StatusToWorldModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/StatusToWorldModel.java" afterDir="false" />

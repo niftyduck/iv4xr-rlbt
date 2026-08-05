@@ -37,7 +37,7 @@ public class MinecraftFeatureObject implements ObjectInstance, MutableState, Ser
     private String objectName = OBJECT_NAME;
 
     public MinecraftFeatureObject() {
-        this(DistanceBucket.FAR, HPBucket.HIGH, HPBucket.HIGH);
+        this(DistanceBucket.UNSEEN, HPBucket.HIGH, HPBucket.HIGH);
     }
 
     public MinecraftFeatureObject(DistanceBucket enemyDistance, HPBucket ownHp, HPBucket mobHp) {
@@ -99,7 +99,7 @@ public class MinecraftFeatureObject implements ObjectInstance, MutableState, Ser
         return objectName;
     }
 
-    /** Compact signature of the features, e.g. "MELEE|HIGH|MEDIUM". */
+    /** Compact signature of the features, e.g. "IN_REACH|HIGH|MEDIUM". */
     @Override
     public String toString() {
         return enemyDistance + "|" + ownHp + "|" + mobHp;

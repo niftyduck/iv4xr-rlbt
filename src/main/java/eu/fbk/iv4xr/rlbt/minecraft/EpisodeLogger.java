@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.DistanceBucket;
 import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.HPBucket;
 import eu.iv4xr.framework.spatial.Vec3;
 
@@ -16,6 +17,7 @@ public class EpisodeLogger implements AutoCloseable {
 
     private static final String ACTIONS_HEADER =
             "id,episode,action,target,param,goal_status,"
+          + "dist_bucket_before,dist_bucket_after,"
           + "mob_hp_before,mob_hp_after,mob_hp_bucket_before,mob_hp_bucket_after,damage_dealt,"
           + "own_hp_before,own_hp_after,own_hp_bucket_before,own_hp_bucket_after,damage_taken,"
           + "hit_landed";
@@ -46,17 +48,22 @@ public class EpisodeLogger implements AutoCloseable {
                 num(mobHp), x(mobPos), y(mobPos), z(mobPos), num(dist)));
     }
 
-    /** One row per performed action. */
+    /** One row per performed action. The buckets are the ones the coverage metric records,
+     * so a row is enough to tell which combination an action was chosen in. */
     public void logAction(int episode, String action, String target, String param, String goalStatus,
+                          DistanceBucket distBucketBefore, DistanceBucket distBucketAfter,
                           Float mobHpBefore, Float mobHpAfter,
                           HPBucket mobBucketBefore, HPBucket mobBucketAfter,
                           Float ownHpBefore, Float ownHpAfter,
                           HPBucket ownBucketBefore, HPBucket ownBucketAfter) {
-        Float dealt = (mobHpBefore != null && mobHpAfter != null) ? mobHpBefore - mobHpAfter : null;
+        // the mob entity disappears when it dies, so a missing HP after a hit means 0
+        Float dealt = (mobHpBefore == null) ? null
+                : mobHpBefore - (mobHpAfter == null ? 0f : mobHpAfter);
         Float taken = (ownHpBefore != null && ownHpAfter != null) ? ownHpBefore - ownHpAfter : null;
         boolean hitLanded = dealt != null && dealt > 0f;
         writeRow(actions, join(
                 num(actionId++), num(episode), csv(action), csv(target), csv(param), csv(goalStatus),
+                name(distBucketBefore), name(distBucketAfter),
                 num(mobHpBefore), num(mobHpAfter), name(mobBucketBefore), name(mobBucketAfter), num(dealt),
                 num(ownHpBefore), num(ownHpAfter), name(ownBucketBefore), name(ownBucketAfter), num(taken),
                 String.valueOf(hitLanded)));
@@ -66,6 +73,7 @@ public class EpisodeLogger implements AutoCloseable {
     public void logAction(int episode, String action, String target, String param, String goalStatus,
                           Float mobHpBefore, Float mobHpAfter, Float ownHpBefore, Float ownHpAfter) {
         logAction(episode, action, target, param, goalStatus,
+                null, null,
                 mobHpBefore, mobHpAfter, null, null,
                 ownHpBefore, ownHpAfter, null, null);
     }

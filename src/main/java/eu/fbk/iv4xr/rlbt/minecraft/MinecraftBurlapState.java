@@ -18,19 +18,16 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
     private static final long serialVersionUID = 1L;
 
     /**
-     * CONTACT  < 2 blocks
-     * MELEE    2-4 blocks
-     * NEAR     4-5 blocks
-     * MEDIUM   5-8 blocks
-     * FAR      >= 8 blocks, or the enemy is not observed at all (the testbench
-     *          only reports entities within scan.entityRadius, 10 by default)
+     * IN_REACH      ATTACK lands
+     * OUT_OF_REACH  ATTACK misses, RETREAT still has somewhere to go
+     * FAR           RETREAT has no destination either
+     * UNSEEN        the testbench does not report the enemy
      */
     public enum DistanceBucket {
-        CONTACT,
-        MELEE,
-        NEAR,
-        MEDIUM,
-        FAR
+        IN_REACH,
+        OUT_OF_REACH,
+        FAR,
+        UNSEEN
     }
 
     /**
@@ -46,11 +43,12 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
         HIGH
     }
 
-    /** Distance boundaries in blocks */
-    public static final double CONTACT_DISTANCE = 2.0;
-    public static final double MELEE_DISTANCE = 4.0;
-    public static final double NEAR_DISTANCE = 5.0;
-    public static final double MEDIUM_DISTANCE = 8.0;
+    /** Attack reach in blocks, measured on the outdoor1 logs with zombie and iron sword:
+        every hit landed below 4.60, every miss happened from 4.63 on. */
+    public static final double ATTACK_REACH = 4.6;
+
+    /** Past this distance RETREAT has no destination to aim for. */
+    public static final double RETREAT_RANGE = 6.0;
 
     /** Health boundaries as a fraction of maximum health.ì */
     public static final float HP_LOW_RATIO = 0.33f;
@@ -129,15 +127,13 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
 
     /** Discretize a distance in blocks */
     public static DistanceBucket distanceBucket(Double distance) {
-        if (distance == null) return DistanceBucket.FAR;
-        if (distance < CONTACT_DISTANCE) return DistanceBucket.CONTACT;
-        if (distance < MELEE_DISTANCE) return DistanceBucket.MELEE;
-        if (distance < NEAR_DISTANCE) return DistanceBucket.NEAR;
-        if (distance < MEDIUM_DISTANCE) return DistanceBucket.MEDIUM;
+        if (distance == null) return DistanceBucket.UNSEEN;
+        if (distance < ATTACK_REACH) return DistanceBucket.IN_REACH;
+        if (distance < RETREAT_RANGE) return DistanceBucket.OUT_OF_REACH;
         return DistanceBucket.FAR;
     }
 
-    /** Compact signature of the abstraction, e.g. "MELEE|HIGH|MEDIUM". Two states
+    /** Compact signature of the abstraction, e.g. "IN_REACH|HIGH|MEDIUM". Two states
         sharing this key are indistinguishable to the learner */
     public String abstractionKey() {
         return getFeatures().toString();

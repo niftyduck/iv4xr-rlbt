@@ -1,0 +1,4 @@
+episode,actions,total_reward,time_ms,dist_cov,own_hp_cov,mob_hp_cov,actions_cov,state_action_cov_cumulative
+1,15,11.839997291564941,24594,4/4,4/4,3/4,3/3,10/108
+2,14,16.0,12403,4/4,1/4,4/4,3/3,16/108
+3,12,16.0,10691,3/4,1/4,4/4,3/3,17/108

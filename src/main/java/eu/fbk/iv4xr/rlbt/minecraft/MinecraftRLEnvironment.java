@@ -12,6 +12,7 @@ import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.spatial.Vec3;
+import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.DistanceBucket;
 import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.HPBucket;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
@@ -45,22 +46,21 @@ public class MinecraftRLEnvironment implements Environment {
     private float prevOwnHp;    // per-tick reference for totalDamageTaken
 
 
-    /** Global coverage metrics to be reported in summary.txt */
+    /** Global coverage metrics to be reported in summary.txt. These count every state
+        observed, whether an action was chosen from it or it merely followed one. */
+    private final EnumSet<DistanceBucket> distanceCoverage = EnumSet.noneOf(DistanceBucket.class);
     private final EnumSet<HPBucket> ownHPCoverage = EnumSet.noneOf(HPBucket.class);
     private final EnumSet<HPBucket> mobHPCoverage = EnumSet.noneOf(HPBucket.class);
     private final EnumSet<MinecraftAction.Command> actionsCoverage = EnumSet.noneOf(MinecraftAction.Command.class);
 
+    private final EnumSet<DistanceBucket> episodeDistance = EnumSet.noneOf(DistanceBucket.class);
     private final EnumSet<HPBucket> episodeOwnHP = EnumSet.noneOf(HPBucket.class);
     private final EnumSet<HPBucket> episodeMobHP = EnumSet.noneOf(HPBucket.class);
     private final EnumSet<MinecraftAction.Command> episodeActions = EnumSet.noneOf(MinecraftAction.Command.class);
 
 
-    /** State-Action coverage metrics to be reported in summary.txt:
-        It simply keeps track of the triples (own HP, mob HP, action) */
-    private final boolean[][][] stateActionCoverage =
-            new boolean[HPBucket.values().length]
-                       [HPBucket.values().length]
-                       [MinecraftAction.Command.values().length];
+    /** State-action coverage, recorded on the state each action was chosen in. */
+    private final StateActionCoverage stateActionCoverage = new StateActionCoverage();
 
 
     /** Per-session CSV writer (null when the run is not being logged) */
@@ -75,7 +75,7 @@ public class MinecraftRLEnvironment implements Environment {
 
     /** Distance that APPROACH and RETREAT aim to reach */
     private static final double APPROACH_DISTANCE = 3.0;
-    private static final double RETREAT_DISTANCE = 6.0;
+    private static final double RETREAT_DISTANCE = MinecraftBurlapState.RETREAT_RANGE;
 
     private static final double RETREAT_TOLERANCE = 1.5;
     private static final int ATTACK_COOLDOWN_TICKS = 20;
@@ -126,6 +126,7 @@ public class MinecraftRLEnvironment implements Environment {
         Float mobMaxHp = (mob == null) ? null : MinecraftBurlapState.maxHpForMob(mob.type);
 
         currentState.updateAbstraction(ownHp, mobHp, mobMaxHp, dist);
+        markDistanceAsCovered(currentState.getEnemyDistance());
         markOwnHpAsCovered(currentState.getOwnHpBucket());
         markMobHpAsCovered(currentState.getMobHpBucket());
 
@@ -177,6 +178,7 @@ public class MinecraftRLEnvironment implements Environment {
 
         Float mobHpBefore = lastMobHp;
         Float ownHpBefore = lastOwnHp;
+        DistanceBucket distanceBefore = currentState.getEnemyDistance();
         HPBucket ownHPBucketBefore = currentState.getOwnHpBucket();
         HPBucket mobHPBucketBefore = currentState.getMobHpBucket();
 
@@ -188,7 +190,8 @@ public class MinecraftRLEnvironment implements Environment {
         lastReward = combatReward(mobHpBefore, ownHpBefore);
         updateCycles++; // the action consumes budget
 
-        recordAction(action, goal, mobHpBefore, ownHpBefore, ownHPBucketBefore, mobHPBucketBefore);
+        recordAction(action, goal, mobHpBefore, ownHpBefore,
+                distanceBefore, ownHPBucketBefore, mobHPBucketBefore);
 
         System.out.println("Action " + action.actionName()
                 + " | " + oldState + " -> " + newState
@@ -267,15 +270,18 @@ public class MinecraftRLEnvironment implements Environment {
 
     /** One row of actions.csv, plus the session counters that summary.txt reports. */
     private void recordAction(MinecraftAction action, GoalStructure goal,
-                              Float mobHpBefore, Float ownHpBefore,
+                              Float mobHpBefore, Float ownHpBefore, DistanceBucket distanceBefore,
                               HPBucket ownBucketBefore, HPBucket mobBucketBefore) {
 
         markActionAsCovered(action.getCommand());
 
+        DistanceBucket distanceAfter = currentState.getEnemyDistance();
         HPBucket ownBucketAfter = agentDied ? HPBucket.DEAD : currentState.getOwnHpBucket();
         HPBucket mobBucketAfter = currentState.getMobHpBucket();
-        markStateAction(ownBucketBefore, mobBucketBefore, action.getCommand());
-        markStateAction(ownBucketAfter, mobBucketAfter, action.getCommand());
+
+        // only the state the action was chosen in: the one it led to never saw it run
+        stateActionCoverage.record(distanceBefore, ownBucketBefore, mobBucketBefore,
+                action.getCommand());
 
         float dealt = (mobHpBefore == null) ? 0f
                 : Math.max(0f, mobHpBefore - (lastMobHp == null ? 0f : lastMobHp));
@@ -290,14 +296,10 @@ public class MinecraftRLEnvironment implements Environment {
         if (logger != null) {
             logger.logAction(episodeNumber, action.actionName(), MOB_TAG, "",
                     goal == null ? "NOT APPLICABLE" : goal.getStatus().toString(),
+                    distanceBefore, distanceAfter,
                     mobHpBefore, lastMobHp, mobBucketBefore, mobBucketAfter,
                     ownHpBefore, lastOwnHp, ownBucketBefore, ownBucketAfter);
         }
-    }
-
-    /** Mark one (ownHP, mobHP, action) combination as reached. */
-    private void markStateAction(HPBucket own, HPBucket mob, MinecraftAction.Command command) {
-        stateActionCoverage[own.ordinal()][mob.ordinal()][command.ordinal()] = true;
     }
 
     public void setLogger(EpisodeLogger logger) {
@@ -314,41 +316,13 @@ public class MinecraftRLEnvironment implements Environment {
                     + " | Mob kills: " + mobKills + nl
              + "Agent deaths: " + agentDeaths + nl
              + "-----" + nl
-             + "GLOBAL COVERAGE:" + nl
+             + "STATE COVERAGE (every state observed):" + nl
+             + "    Global Distance coverage: " + coverage(distanceCoverage, DistanceBucket.values().length) + nl
              + "    Global Own HP coverage: " + coverage(ownHPCoverage, HPBucket.values().length) + nl
              + "    Global Mob HP coverage: " + coverage(mobHPCoverage, HPBucket.values().length) + nl
              + "    Global Actions coverage: " + coverage(actionsCoverage, MinecraftAction.Command.values().length) + nl
-             + stateActionSummary(nl);
-    }
-
-    private String stateActionSummary(String nl) {
-        HPBucket[] buckets = HPBucket.values();
-        MinecraftAction.Command[] commands = MinecraftAction.Command.values();
-        int total = buckets.length * buckets.length * commands.length;
-
-        int covered = 0;
-        StringBuilder missing = new StringBuilder();
-        for (HPBucket own : buckets) {
-            for (HPBucket mob : buckets) {
-                for (MinecraftAction.Command command : commands) {
-                    if (stateActionCoverage[own.ordinal()][mob.ordinal()][command.ordinal()]) {
-                        covered++;
-                    } else {
-                        if (missing.length() > 0)
-                            missing.append(", ");
-                        missing.append(own).append('|').append(mob).append('|').append(command);
-                    }
-                }
-            }
-        }
-
-        int percent = Math.round(100f * covered / total);
-        return "-----" + nl
-             + "STATE-ACTION COVERAGE (ownHP x mobHP x action):" + nl
-             + "    Total available combinations: " + buckets.length + "*" + buckets.length
-                    + "*" + commands.length + " (" + total + ")" + nl
-             + "    Combinations covered: " + covered + "/" + total + " (" + percent + "%)" + nl
-             + "    Missing: [" + missing + "]" + nl;
+             + "-----" + nl
+             + stateActionCoverage.summary(nl);
     }
 
     private static String coverage(EnumSet<?> covered, int total) {
@@ -357,6 +331,11 @@ public class MinecraftRLEnvironment implements Environment {
     }
 
     /** Mark a value as covered, in the session metric and in the episode one at once. */
+    private void markDistanceAsCovered(DistanceBucket bucket) {
+        distanceCoverage.add(bucket);
+        episodeDistance.add(bucket);
+    }
+
     private void markOwnHpAsCovered(HPBucket bucket) {
         ownHPCoverage.add(bucket);
         episodeOwnHP.add(bucket);
@@ -372,6 +351,10 @@ public class MinecraftRLEnvironment implements Environment {
         episodeActions.add(command);
     }
 
+    public String episodeDistanceCoverage() {
+        return ratio(episodeDistance, DistanceBucket.values().length);
+    }
+
     public String episodeOwnHpCoverage() {
         return ratio(episodeOwnHP, HPBucket.values().length);
     }
@@ -382,6 +365,11 @@ public class MinecraftRLEnvironment implements Environment {
 
     public String episodeActionsCoverage() {
         return ratio(episodeActions, MinecraftAction.Command.values().length);
+    }
+
+    /** State-action coverage reached so far, over the whole session. */
+    public String cumulativeStateActionCoverage() {
+        return stateActionCoverage.ratio();
     }
 
     /** How many values were covered out of how many exist. */
@@ -422,6 +410,7 @@ public class MinecraftRLEnvironment implements Environment {
         tickCounter = 0;
 
         // Cleared so the equip phase below counts towards the episode it opens
+        episodeDistance.clear();
         episodeOwnHP.clear();
         episodeMobHP.clear();
         episodeActions.clear();

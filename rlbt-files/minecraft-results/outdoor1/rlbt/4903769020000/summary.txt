@@ -1,9 +1,0 @@
-Hits attempted: 28 | Hits landed: 23 | Efficiency: 0.8214286
-Total damage dealt: 58.479996 | Total damage taken: 57.0 | Mob kills: 2
-Agent deaths: 1
------------
-SIMPLE COVERAGE METRICS (Global coverage):
-    Own HP coverage: 3/4 (75%) [LOW, MEDIUM, HIGH]
-    Mob HP coverage: 4/4 (100%) [DEAD, LOW, MEDIUM, HIGH]
-    Actions coverage: 3/3 (100%) [APPROACH, ATTACK, RETREAT]
-Episodes: 3
