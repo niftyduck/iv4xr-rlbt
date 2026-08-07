@@ -31,10 +31,6 @@ public class MinecraftActionType implements ActionType, Serializable {
 		return typeName;
 	}
 
-	/**
-	 * Rebuilds an action from its name, i.e. from the command alone.
-	 * Needed to read back the serialized Q-table and episodes.
-	 */
 	@Override
 	public Action associatedAction(String strRep) {
 		return new MinecraftAction(Command.valueOf(strRep));

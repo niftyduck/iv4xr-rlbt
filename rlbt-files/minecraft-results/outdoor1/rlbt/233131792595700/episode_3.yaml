@@ -1,20 +1,25 @@
 !!burlap.behavior.singleagent.Episode
 actionSequence:
-- &id002 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - &id001 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - *id001
+- &id002 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - *id002
+- *id001
 - &id003 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - *id003
-- *id003
-- *id003
-- *id003
-- *id003
-- *id003
-- *id003
-rewardSequence: [0.0, -4.0, 0.0, 0.0, 2.6399993896484375, 2.6399993896484375, 2.6399993896484375,
-  2.6399993896484375, 2.6399998664855957, 2.6399998664855957, 2.6399998664855957,
-  1.520002841949463]
+- *id001
+- *id001
+- *id001
+- *id001
+- *id001
+- *id002
+- *id001
+- *id001
+- *id001
+- *id001
+rewardSequence: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.6399993896484375, 2.6399993896484375,
+  2.6399993896484375, 2.6399993896484375, 2.6399998664855957, 0.0, 2.6399998664855957,
+  2.6399998664855957, 0.0, 1.520002841949463]
 stateSequence:
 - !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
   objectsByClass:
@@ -94,3 +99,33 @@ stateSequence:
     - &id016 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
   objectsMap:
     features: *id016
+- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
+  objectsByClass:
+    combatFeatures:
+    - &id017 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
+  objectsMap:
+    features: *id017
+- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
+  objectsByClass:
+    combatFeatures:
+    - &id018 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
+  objectsMap:
+    features: *id018
+- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
+  objectsByClass:
+    combatFeatures:
+    - &id019 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
+  objectsMap:
+    features: *id019
+- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
+  objectsByClass:
+    combatFeatures:
+    - &id020 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
+  objectsMap:
+    features: *id020
+- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
+  objectsByClass:
+    combatFeatures:
+    - &id021 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
+  objectsMap:
+    features: *id021

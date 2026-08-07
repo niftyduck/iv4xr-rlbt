@@ -32,12 +32,14 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
 
     /**
      * DEAD
-     * LOW      < 33%
-     * MEDIUM   33% - 66%
-     * HIGH     > 66%
+     * CRITICAL < 25%
+     * LOW      25 - 50%
+     * MEDIUM   50% - 75%
+     * HIGH     > 75%
      */
     public enum HPBucket {
         DEAD,
+        CRITICAL,
         LOW,
         MEDIUM,
         HIGH
@@ -51,8 +53,9 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
     public static final double RETREAT_RANGE = 6.0;
 
     /** Health boundaries as a fraction of maximum health.ì */
-    public static final float HP_LOW_RATIO = 0.33f;
-    public static final float HP_HIGH_RATIO = 0.66f;
+    public static final float HP_CRITICAL_RATIO = 0.25f;
+    public static final float HP_LOW_RATIO = 0.50f;
+    public static final float HP_HIGH_RATIO = 0.75f;
 
     /** Maximum health of the agent. A Minecraft player has 10 hearts. */
     public static final float PLAYER_MAX_HP = 20f;
@@ -120,6 +123,7 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
         if (hp == null || hp <= 0f || maxHp <= 0f) return HPBucket.DEAD;
 
         float ratio = hp / maxHp;
+        if (ratio < HP_CRITICAL_RATIO) return HPBucket.CRITICAL;
         if (ratio < HP_LOW_RATIO) return HPBucket.LOW;
         if (ratio < HP_HIGH_RATIO) return HPBucket.MEDIUM;
         return HPBucket.HIGH;

@@ -132,7 +132,7 @@ public class MineAgent {
 		SerializationUtil.serializeEpisodes(episodes, sessionDir + File.separator + "episode");
 
 		writeEpisodeSummary(episodes, episodeTime, episodeCoverage,
-				new File(sessionDir, "episodeSummary.txt"));
+				new File(sessionDir, "episodeSummary.csv"));
 		writeSummaryTxt(env, episodes.size(), new File(sessionDir, "summary.txt"));
 
 		System.out.println("Session written to: " + sessionDir);
@@ -199,7 +199,7 @@ public class MineAgent {
 		System.out.println("Connecting to MineflayerTestbench at " + testbenchUrl);
 		System.out.println("Building level: " + levelPath);
 
-		Map<String, Vec3> tags = env.buildLevel(levelCsv, 0, 65, 0);
+		Map<String, Vec3> tags = env.buildLevel(levelCsv, 0, 150, 0);
 		System.out.println("Arena built. Tags: " + tags);
 	}
 

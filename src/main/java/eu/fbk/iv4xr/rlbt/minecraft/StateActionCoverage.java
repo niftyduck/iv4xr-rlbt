@@ -9,33 +9,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * State-action coverage over the tuple (distance, own HP, mob HP, action).
- * A tuple is recorded for the state the action was <em>chosen in</em>, never for the
- * one it led to: covering (s, a) means a was executed in s.
- * The summary lists the combinations done and the ones missing, so any finer reading
- * can be worked out from those two lists.
- */
+/** State-action coverage over the tuple (distance, own HP, mob HP, action) */
 public class StateActionCoverage {
 
     private static final List<String> FEATURES =
             Arrays.asList("distance", "own HP", "mob HP", "action");
 
-    /**
-     * Feasible values, feature by feature. Only DEAD is left out, for either fighter:
-     * isInTerminalState() ends the episode as soon as it is reached, so no action is ever
-     * chosen from there. UNSEEN is kept, the mob can go missing from the world model while
-     * its health still reads fine and the fight goes on.
-     */
+    /** Feasible values, feature by feature. Only DEAD is left out */
     private static final List<List<Object>> DOMAIN = Arrays.asList(
-            Arrays.asList((Object[]) DistanceBucket.values()),
+            Arrays.asList(DistanceBucket.values()),
             Arrays.asList(HPBucket.LOW, HPBucket.MEDIUM, HPBucket.HIGH),
             Arrays.asList(HPBucket.LOW, HPBucket.MEDIUM, HPBucket.HIGH),
-            Arrays.asList((Object[]) MinecraftAction.Command.values()));
+            Arrays.asList(MinecraftAction.Command.values()));
 
     private final Set<List<Object>> observed = new LinkedHashSet<>();
 
-    /** Tuples seen outside the feasible domain: each one contradicts the table above. */
     private int outsideDomain;
 
     public void record(DistanceBucket distance, HPBucket ownHp, HPBucket mobHp,
@@ -101,7 +89,7 @@ public class StateActionCoverage {
         List<String> missing = new ArrayList<>();
         for (List<Object> tuple : allCombinations())
             (observed.contains(tuple) ? done : missing).add(key(tuple));
-
+        
         StringBuilder sb = new StringBuilder();
         sb.append("STATE-ACTION COVERAGE (").append(String.join(" x ", FEATURES)).append(')').append(nl);
         sb.append("    Feasible combinations: ").append(dimensions())

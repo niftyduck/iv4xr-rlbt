@@ -1,27 +1,26 @@
 !!burlap.behavior.singleagent.Episode
 actionSequence:
-- &id002 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - &id001 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
-- *id001
+- &id002 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
 - &id003 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftAction {}
-- *id002
-- *id002
-- *id001
-- *id002
-- *id001
-- *id001
-- *id001
-- *id001
-- *id001
 - *id001
 - *id002
 - *id003
-- *id001
-- *id003
 - *id002
-rewardSequence: [0.0, 0.0, 0.0, -5.0, 0.0, 0.0, 0.0, 0.0, 2.6399993896484375, 2.6399993896484375,
-  2.6399993896484375, 2.6399993896484375, 2.6399998664855957, 2.6399998664855957,
-  0.0, 0.0, -0.3600001335144043, 0.0, 0.0]
+- *id002
+- *id001
+- *id002
+- *id002
+- *id001
+- *id002
+- *id001
+- *id002
+- *id002
+- *id002
+- *id002
+rewardSequence: [0.0, 0.0, -5.0, 0.0, 0.0, 0.0, 2.6399993896484375, 2.6399993896484375,
+  0.0, 2.6399993896484375, 2.6399993896484375, 0.0, 2.6399998664855957, 0.0, 0.0,
+  2.6399998664855957, 2.6399998664855957, 1.520002841949463]
 stateSequence:
 - !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
   objectsByClass:
@@ -137,9 +136,3 @@ stateSequence:
     - &id022 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
   objectsMap:
     features: *id022
-- !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState
-  objectsByClass:
-    combatFeatures:
-    - &id023 !!eu.fbk.iv4xr.rlbt.minecraft.MinecraftFeatureObject {}
-  objectsMap:
-    features: *id023

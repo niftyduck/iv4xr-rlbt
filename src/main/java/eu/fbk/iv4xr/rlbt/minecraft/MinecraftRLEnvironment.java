@@ -168,9 +168,6 @@ public class MinecraftRLEnvironment implements Environment {
         return lastReward;
     }
 
-    /** Run one action against the SUT and report what happened: observe before,
-     * translate the action into an aplib goal and pursue it, observe again,
-     * score the outcome. */
     @Override
     public EnvironmentOutcome executeAction(Action a) {
         MinecraftAction action = (MinecraftAction) a;
@@ -316,11 +313,11 @@ public class MinecraftRLEnvironment implements Environment {
                     + " | Mob kills: " + mobKills + nl
              + "Agent deaths: " + agentDeaths + nl
              + "-----" + nl
-             + "STATE COVERAGE (every state observed):" + nl
-             + "    Global Distance coverage: " + coverage(distanceCoverage, DistanceBucket.values().length) + nl
-             + "    Global Own HP coverage: " + coverage(ownHPCoverage, HPBucket.values().length) + nl
-             + "    Global Mob HP coverage: " + coverage(mobHPCoverage, HPBucket.values().length) + nl
-             + "    Global Actions coverage: " + coverage(actionsCoverage, MinecraftAction.Command.values().length) + nl
+             + "GLOBAL STATE COVERAGE (every state observed):" + nl
+             + "- Distance coverage: " + coverage(distanceCoverage, DistanceBucket.values().length) + nl
+             + "- Own HP coverage: " + coverage(ownHPCoverage, HPBucket.values().length) + nl
+             + "- Mob HP coverage: " + coverage(mobHPCoverage, HPBucket.values().length) + nl
+             + "- Actions coverage: " + coverage(actionsCoverage, MinecraftAction.Command.values().length) + nl
              + "-----" + nl
              + stateActionCoverage.summary(nl);
     }
