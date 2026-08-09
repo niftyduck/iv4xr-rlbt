@@ -22,6 +22,7 @@ public class MinecraftConfiguration extends Configuration {
 		parameters.put("mine.max_actions_per_episode", 30);
 		parameters.put("mine.mob_tag", "mob1");
 		parameters.put("mine.reward_type", "CoverageOriented");
+		parameters.put("mine.weapon", "iron_sword");
 	}
 
 }

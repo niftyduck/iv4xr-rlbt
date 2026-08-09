@@ -76,6 +76,7 @@ public class MinecraftRLEnvironment implements Environment {
 
     private final String AGENT_ID = "Bot";
     private final String mobTag;
+    private final String weapon;
 
     /** Distance that APPROACH and RETREAT aim to reach */
     private static final double APPROACH_DISTANCE = 3.0;
@@ -95,14 +96,13 @@ public class MinecraftRLEnvironment implements Environment {
         return maxActionsPerEpisode;
     }
 
-    // TODO: change hard-coded weapon
-    private static final String WEAPON = "iron_sword";
 
 
     public MinecraftRLEnvironment(MinecraftEnv env, MinecraftConfiguration mineConfiguration) {
         maxTicksPerAction = (int) mineConfiguration.getParameterValue("mine.max_ticks_per_action");
         maxActionsPerEpisode = (int) mineConfiguration.getParameterValue("mine.max_actions_per_episode");
         mobTag = (String) mineConfiguration.getParameterValue("mine.mob_tag");
+        weapon = (String) mineConfiguration.getParameterValue("mine.weapon");
 
         // The reward type is set in the configuration file
         rewardType = mineConfiguration.getParameterValue("mine.reward_type").equals("CoverageOriented") ?
@@ -466,11 +466,13 @@ public class MinecraftRLEnvironment implements Environment {
         Float hp = state.getHealth();
         prevOwnHp = (hp == null) ? 0f : hp;
         
-        GoalStructure equip = goalLib.selected(WEAPON);
+        GoalStructure equip = goalLib.selected(weapon);
         runGoal(equip, maxTicksPerAction, "equip");
         if (!equip.getStatus().success()) {
-            throw new RuntimeException("cannot select " + WEAPON + ", the agent would fight "
-                    + "bare-handed and the run would not be comparable: " + equip.getStatus());
+            throw new RuntimeException("cannot select " + weapon + " (mine.weapon), the agent "
+                    + "would fight bare-handed and the run would not be comparable. The weapon has "
+                    + "to appear in the hotbar row of the level CSV named by mine.level, which is "
+                    + "the first line of the file. Goal status: " + equip.getStatus());
         }
 
         currentObservation();   // so isInTerminalState() has a fresh observation to read

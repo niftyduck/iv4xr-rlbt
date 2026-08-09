@@ -24,6 +24,34 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\495647377687600\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511522486986600\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511656312551100\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511954330833900\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\src\test\resources\levels\CLRSWTCH.csv">
           <value>
             <Attribute>
@@ -164,7 +192,35 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\MC-3697.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\anvil-test.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\damage.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\minecraftlib\target\test-classes\levels\MC-3697.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\minecraftlib\target\test-classes\levels\anvil-test.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -179,6 +235,20 @@
           </value>
         </entry>
         <entry key="\sut\minecraft\mineflayer-testbench\debug_log.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\MC-3697.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\anvil-test.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

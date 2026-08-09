@@ -61,6 +61,7 @@ public class MineAgentBaseline {
         System.out.println("-------------------------- Starting Baseline on Minecraft ---------------------");
         maxTicks = (int) mineConfiguration.getParameterValue("mine.max_ticks_per_action");
         mobTag = (String) mineConfiguration.getParameterValue("mine.mob_tag");
+        String weapon = (String) mineConfiguration.getParameterValue("mine.weapon");
         MinecraftEnv env = new MinecraftEnv(testbenchUrl);
         MinecraftState state = new MinecraftState();
         MinecraftGoalLib goalLib = new MinecraftGoalLib();
@@ -87,11 +88,11 @@ public class MineAgentBaseline {
             totalDamageTaken = 0f;
             prevOwnHp = state.getHealth();   // baseline for per-tick damage-taken accounting
 
-            // equip iron_sword + reach the mob ---
+            // equip the weapon + reach the mob ---
             Float mobBefore = env.getMobHealth(mobTag);
             Float ownBefore = state.getHealth();
             GoalStructure approach = SEQ(
-                    goalLib.selected("iron_sword"),
+                    goalLib.selected(weapon),
                     goalLib.tagReachedWithinDistance(mobTag, 2.0));
             tick = runGoal(agent, state, env, approach, log, episode, "approach", tick);
             log.logAction(episode, "MOVE_TO", mobTag, "2.0", approach.getStatus().toString(),
