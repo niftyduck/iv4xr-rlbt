@@ -1,0 +1,66 @@
+
+
+=====================Q-Table========================================
+Qtable size = 12
+----------------------------------------------------------------------------
+State = [IN_REACH|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 1.1575344724017267
+action: ATTACK	value: 5.230229106326045
+action: RETREAT	value: 0.9358542323209733
+State = [OUT_OF_REACH|HIGH|CRITICAL]
+Number of Q value entry= 3
+action: APPROACH	value: 0.3893088598967004
+action: ATTACK	value: 0.1
+action: RETREAT	value: -0.921145605470839
+State = [OUT_OF_REACH|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 1.3613957531716316
+action: RETREAT	value: 0.795144736682275
+State = [OUT_OF_REACH|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.9788888092310389
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [IN_REACH|MEDIUM|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 1.8225644124295592
+action: RETREAT	value: 0.1
+State = [FAR|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: -1.0123370704088137
+action: ATTACK	value: 0.22694750570223832
+action: RETREAT	value: 0.046907382650283255
+State = [IN_REACH|HIGH|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 1.427611055318839
+action: ATTACK	value: 3.9761714197751497
+action: RETREAT	value: 0.8906108553279908
+State = [OUT_OF_REACH|HIGH|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: -0.6325574942920986
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [UNSEEN|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: -2.9797807078752783
+action: ATTACK	value: 0.08366110054380957
+action: RETREAT	value: 0.066101856640625
+State = [IN_REACH|MEDIUM|CRITICAL]
+Number of Q value entry= 3
+action: APPROACH	value: 0.08975
+action: ATTACK	value: 0.4550007104873657
+action: RETREAT	value: 0.08975
+State = [IN_REACH|HIGH|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 1.7638781202938474
+action: ATTACK	value: 4.23297262439237
+action: RETREAT	value: 1.1506552030640074
+State = [IN_REACH|HIGH|CRITICAL]
+Number of Q value entry= 3
+action: APPROACH	value: 0.9148489866087488
+action: ATTACK	value: 2.4294938946011513
+action: RETREAT	value: 0.26608995876285746
+----------------------------------------------------------------------------

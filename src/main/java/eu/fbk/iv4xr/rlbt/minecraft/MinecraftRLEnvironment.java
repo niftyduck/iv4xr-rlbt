@@ -15,12 +15,18 @@ import eu.iv4xr.framework.spatial.Vec3;
 import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.DistanceBucket;
 import eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState.HPBucket;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import org.datavec.api.transform.Distance;
 
 import java.util.EnumSet;
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 
 /** The BURLAP environment of the Minecraft combat scenario */
 public class MinecraftRLEnvironment implements Environment {
+
+    enum RewardType {
+        COMBAT_ORIENTED,  // aims to kill the mob
+        COVERAGE_ORIENTED // aims to cover the whole state-action domain
+    }
 
     private final MinecraftEnv minecraftEnv;      // HTTP client, only one instance
     private final MinecraftState state;           // belief-state iv4xr
@@ -29,7 +35,7 @@ public class MinecraftRLEnvironment implements Environment {
     private final MinecraftBurlapState currentState;
     private double lastReward;
     private int updateCycles;   // budget of episode actions
-
+    private RewardType rewardType;
 
     /** Episode Metrics */
     private Float lastMobHp;
@@ -68,10 +74,8 @@ public class MinecraftRLEnvironment implements Environment {
     private int episodeNumber;
     private int tickCounter;
 
-    // TODO: the mob shouldn't be hard-coded like this, better if the player recognizes
-    //  the nearest mob and automatically performs actions on it.
     private final String AGENT_ID = "Bot";
-    private final String MOB_TAG = "mob1";
+    private final String mobTag;
 
     /** Distance that APPROACH and RETREAT aim to reach */
     private static final double APPROACH_DISTANCE = 3.0;
@@ -79,6 +83,11 @@ public class MinecraftRLEnvironment implements Environment {
 
     private static final double RETREAT_TOLERANCE = 1.5;
     private static final int ATTACK_COOLDOWN_TICKS = 20;
+
+    /** Weight of the coverage exploration bonus: what a state-action tuple is worth
+        on its first visit of an episode */
+    private static final double COVERAGE_BONUS = 1.0;
+
     private final int maxTicksPerAction;
     private final int maxActionsPerEpisode;
 
@@ -93,6 +102,14 @@ public class MinecraftRLEnvironment implements Environment {
     public MinecraftRLEnvironment(MinecraftEnv env, MinecraftConfiguration mineConfiguration) {
         maxTicksPerAction = (int) mineConfiguration.getParameterValue("mine.max_ticks_per_action");
         maxActionsPerEpisode = (int) mineConfiguration.getParameterValue("mine.max_actions_per_episode");
+        mobTag = (String) mineConfiguration.getParameterValue("mine.mob_tag");
+
+        // The reward type is set in the configuration file
+        rewardType = mineConfiguration.getParameterValue("mine.reward_type").equals("CoverageOriented") ?
+                RewardType.COVERAGE_ORIENTED :
+                RewardType.COMBAT_ORIENTED;
+
+        System.out.println("[REWARD] Set Reward Type to " + rewardType.toString());
 
         minecraftEnv = env;
         state = new MinecraftState();
@@ -114,10 +131,10 @@ public class MinecraftRLEnvironment implements Environment {
     public State currentObservation() {
         state.updateState(AGENT_ID);
 
-        WorldEntity mob = mobEntity(MOB_TAG);
+        WorldEntity mob = mobEntity(mobTag);
 
         Float ownHp = state.getHealth();
-        Float mobHp = minecraftEnv.getMobHealth(MOB_TAG);
+        Float mobHp = minecraftEnv.getMobHealth(mobTag);
         Vec3 ownPos = state.getAgentPosition();
         Vec3 mobPos = (mob == null) ? null : mob.position;
         Double dist = distance(ownPos, mobPos);
@@ -184,7 +201,9 @@ public class MinecraftRLEnvironment implements Environment {
             runGoal(goal, maxTicksPerAction, action.actionName());
 
         State newState = currentObservation();
-        lastReward = combatReward(mobHpBefore, ownHpBefore);
+        lastReward = rewardType == RewardType.COMBAT_ORIENTED ?
+                combatReward(mobHpBefore, ownHpBefore) :
+                coverageReward(mobHPBucketBefore, ownHPBucketBefore, distanceBefore, action);
         updateCycles++; // the action consumes budget
 
         recordAction(action, goal, mobHpBefore, ownHpBefore,
@@ -202,9 +221,9 @@ public class MinecraftRLEnvironment implements Environment {
     private GoalStructure toGoal(MinecraftAction action) {
         switch (action.getCommand()) {
             case APPROACH:
-                return goalLib.tagReachedWithinDistance(MOB_TAG, APPROACH_DISTANCE);
+                return goalLib.tagReachedWithinDistance(mobTag, APPROACH_DISTANCE);
             case ATTACK: // hit then sit out the weapon cooldown
-                return SEQ(goalLib.attacked(MOB_TAG), goalLib.waited(ATTACK_COOLDOWN_TICKS));
+                return SEQ(goalLib.attacked(mobTag), goalLib.waited(ATTACK_COOLDOWN_TICKS));
             case RETREAT:
                 Vec3 target = retreatPosition();
                 return (target == null) ? null : goalLib.reached(target, RETREAT_TOLERANCE);
@@ -214,7 +233,7 @@ public class MinecraftRLEnvironment implements Environment {
     }
 
     private Vec3 retreatPosition() {
-        WorldEntity mob = mobEntity(MOB_TAG);
+        WorldEntity mob = mobEntity(mobTag);
         Vec3 me = state.getAgentPosition();
         if (mob == null || me == null)
             return null;
@@ -258,7 +277,7 @@ public class MinecraftRLEnvironment implements Environment {
     private void logTick(String phase, String goalStatus) {
         if (logger == null)
             return;
-        WorldEntity mob = mobEntity(MOB_TAG);
+        WorldEntity mob = mobEntity(mobTag);
         Vec3 ownPos = state.getAgentPosition();
         Vec3 mobPos = (mob == null) ? null : mob.position;
         logger.logTick(episodeNumber, tickCounter, phase, goalStatus,
@@ -291,7 +310,7 @@ public class MinecraftRLEnvironment implements Environment {
         }
 
         if (logger != null) {
-            logger.logAction(episodeNumber, action.actionName(), MOB_TAG, "",
+            logger.logAction(episodeNumber, action.actionName(), mobTag, "",
                     goal == null ? "NOT APPLICABLE" : goal.getStatus().toString(),
                     distanceBefore, distanceAfter,
                     mobHpBefore, lastMobHp, mobBucketBefore, mobBucketAfter,
@@ -386,7 +405,26 @@ public class MinecraftRLEnvironment implements Environment {
             taken = Math.max(0f, ownHpBefore - lastOwnHp);
         }
 
+        System.out.println("[COMBAT REWARD] New reward: " + (dealt-taken));
         return dealt - taken;
+    }
+
+
+    private double coverageReward(HPBucket mobHP, HPBucket ownHP, DistanceBucket distance, MinecraftAction action) {
+        MinecraftAction.Command command = action.getCommand();
+
+        if (!stateActionCoverage.isInDomain(mobHP, ownHP, distance, command)) {
+            System.out.println("[COVERAGE REWARD] Outside the feasible domain, no bonus: "
+                    + ownHP + ", " + mobHP + ", " + distance + ", " + action.actionName());
+            return 0;
+        }
+
+        int visitCount = stateActionCoverage.episodeVisitCount(mobHP, ownHP, distance, command) + 1;
+        double bonus = COVERAGE_BONUS / Math.sqrt(visitCount);
+
+        System.out.println("[COVERAGE REWARD] Visit " + visitCount + " of " + ownHP + ", " + mobHP
+                + ", " + distance + ", " + action.actionName() + " -> bonus " + bonus);
+        return bonus;
     }
 
     @Override
@@ -412,6 +450,10 @@ public class MinecraftRLEnvironment implements Environment {
         episodeMobHP.clear();
         episodeActions.clear();
 
+        // The reward reads per-episode visit counts: without this the bonus would keep
+        // decaying over the whole session and be worth almost nothing after a few episodes
+        stateActionCoverage.startEpisode();
+
         // Re-baseline the death counter before anything else in the episode can kill the agent
         deathsAtEpisodeStart = null;
         state.updateState(AGENT_ID);
@@ -423,7 +465,7 @@ public class MinecraftRLEnvironment implements Environment {
 
         Float hp = state.getHealth();
         prevOwnHp = (hp == null) ? 0f : hp;
-
+        
         GoalStructure equip = goalLib.selected(WEAPON);
         runGoal(equip, maxTicksPerAction, "equip");
         if (!equip.getStatus().success()) {
@@ -440,8 +482,8 @@ public class MinecraftRLEnvironment implements Environment {
         waitUntilAlive();
         minecraftEnv.resetWorker();
 
-        if (minecraftEnv.tagUuids.get(MOB_TAG) == null) {
-            throw new RuntimeException("reset succeeded but tag " + MOB_TAG
+        if (minecraftEnv.tagUuids.get(mobTag) == null) {
+            throw new RuntimeException("reset succeeded but tag " + mobTag
                     + " is missing from the tag map: the level cannot be played");
         }
         startAgentEnvironment();

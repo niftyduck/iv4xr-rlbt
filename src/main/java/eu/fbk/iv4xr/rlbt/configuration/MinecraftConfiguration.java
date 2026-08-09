@@ -18,11 +18,10 @@ public class MinecraftConfiguration extends Configuration {
 		parameters.put("mine.address", "localhost");
 		parameters.put("mine.level", "sut/minecraft/mineflayer-testbench/examples/arena.csv");
 		parameters.put("mine.testbenchUrl", "http://localhost:3000");
-
-		// Budgets of an episode: how long a single action may tick before it is
-		// given up on, and how many actions an episode is allowed to take.
 		parameters.put("mine.max_ticks_per_action", 120);
 		parameters.put("mine.max_actions_per_episode", 30);
+		parameters.put("mine.mob_tag", "mob1");
+		parameters.put("mine.reward_type", "CoverageOriented");
 	}
 
 }

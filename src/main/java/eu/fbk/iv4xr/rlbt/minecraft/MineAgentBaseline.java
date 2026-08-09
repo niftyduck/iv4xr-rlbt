@@ -32,25 +32,14 @@ public class MineAgentBaseline {
     static MinecraftConfiguration mineConfiguration = new MinecraftConfiguration();
 
     private static final String AGENT_ID = "Bot";
-    private static final String MOB_TAG = "mob1";   // deve combaciare col tag nel CSV: @zombie^zombie
+    private static String mobTag;   // deve combaciare col tag nel CSV: @zombie^zombie
 
-    /* Ticks a single goal may run before it is given up on, read from
-     * mineAgent.config (mine.max_ticks_per_action) so that the baseline and the
-     * RL run share the budget they are compared on. Assigned when the test
-     * starts, not here: the configuration file is loaded in main(), after this
-     * object has been built. */
     private int maxTicks;
-
-    /* Attacks the scripted loop performs at most. Deliberately NOT
-     * mine.max_actions_per_episode: that budget counts RL actions of any kind,
-     * this one only counts hits, and tying them together would silently change
-     * what every past baseline run measured. */
     private static final int MAX_ITERATIONS = 10;
 
     // damage taken, accumulated per-tick across all phases (regen-robust, unlike boundary sampling)
     private float totalDamageTaken;
     private Float prevOwnHp;
-
 
     private static void writeSummaryTxt(File sessionDir, int hits_landed, int hits_attempted, float hit_efficiency, float total_damage_dealt, float total_damage_taken, int ticks_to_kill, boolean killed) {
         File summary = new File(sessionDir, "summary.txt");   // alongside ticks.csv / actions.csv
@@ -66,36 +55,27 @@ public class MineAgentBaseline {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-
     }
-
 
     public void executeBaselineTest(String testbenchUrl, String levelCsv) {
         System.out.println("-------------------------- Starting Baseline on Minecraft ---------------------");
         maxTicks = (int) mineConfiguration.getParameterValue("mine.max_ticks_per_action");
+        mobTag = (String) mineConfiguration.getParameterValue("mine.mob_tag");
         MinecraftEnv env = new MinecraftEnv(testbenchUrl);
         MinecraftState state = new MinecraftState();
         MinecraftGoalLib goalLib = new MinecraftGoalLib();
 
         TestAgent agent = new TestAgent(AGENT_ID, "tester");
         agent.setTestDataCollector(new TestDataCollector());
-
-        /* Build a 20x20 diamond base at (0,65,0):
-            -- zombie and bot blocks sit at y=66
-            -- corners: (0 , 65,  0 )
-                        (20, 65,  0 )
-                        (0 , 65,  20)
-                        (20, 65,  20) */
         env.buildLevel(levelCsv, 0, 65, 0);
 
-        // Connect state and agent environment
-        agent.attachState(state).attachEnvironment(env);
+        agent.attachState(state).attachEnvironment(env); // Connect state and agent environment
 
         // Create the per-session output directory (minecraft-results/<level>/baseline/<systemtime>)
         File sessionDir = new File(outputDir);
-        if (!sessionDir.exists() && !sessionDir.mkdirs()) {
+        if (!sessionDir.exists() && !sessionDir.mkdirs())
             throw new RuntimeException("Unable to create output directory: " + sessionDir);
-        }
+
         System.out.println("Writing results to: " + sessionDir);
 
         final int episode = 1;            // baseline: a single episode per run
@@ -108,14 +88,14 @@ public class MineAgentBaseline {
             prevOwnHp = state.getHealth();   // baseline for per-tick damage-taken accounting
 
             // equip iron_sword + reach the mob ---
-            Float mobBefore = env.getMobHealth(MOB_TAG);
+            Float mobBefore = env.getMobHealth(mobTag);
             Float ownBefore = state.getHealth();
             GoalStructure approach = SEQ(
                     goalLib.selected("iron_sword"),
-                    goalLib.tagReachedWithinDistance(MOB_TAG, 2.0));
+                    goalLib.tagReachedWithinDistance(mobTag, 2.0));
             tick = runGoal(agent, state, env, approach, log, episode, "approach", tick);
-            log.logAction(episode, "MOVE_TO", MOB_TAG, "2.0", approach.getStatus().toString(),
-                    mobBefore, env.getMobHealth(MOB_TAG), ownBefore, state.getHealth());
+            log.logAction(episode, "MOVE_TO", mobTag, "2.0", approach.getStatus().toString(),
+                    mobBefore, env.getMobHealth(mobTag), ownBefore, state.getHealth());
 
 
             // variables for summary.txt
@@ -129,17 +109,17 @@ public class MineAgentBaseline {
 
             // attack loop: hit until the mob dies (or max iterations) ---
             for (int i = 1; i < MAX_ITERATIONS; i++) {
-                mobBefore = env.getMobHealth(MOB_TAG);
+                mobBefore = env.getMobHealth(mobTag);
                 ownBefore = state.getHealth();
 
                 GoalStructure hit = SEQ(
-                        goalLib.attacked(MOB_TAG),  // attack
+                        goalLib.attacked(mobTag),  // attack
                         goalLib.waited(20));   // wait ~1s
                 tick = runGoal(agent, state, env, hit, log, episode, "hit_" + i, tick);
 
-                Float mobAfter = env.getMobHealth(MOB_TAG);
+                Float mobAfter = env.getMobHealth(mobTag);
                 Float ownAfter = state.getHealth();
-                log.logAction(episode, "ATTACK", MOB_TAG, "", hit.getStatus().toString(),
+                log.logAction(episode, "ATTACK", mobTag, "", hit.getStatus().toString(),
                         mobBefore, mobAfter, ownBefore, ownAfter);
 
                 // damage dealt + whether the hit landed (i.e. it dealt damage).
@@ -212,8 +192,8 @@ public class MineAgentBaseline {
                 prevOwnHp = ownHp;
 
             Vec3 ownPos = state.getAgentPosition();
-            Float mobHp = env.getMobHealth(MOB_TAG);
-            Vec3 mobPos = mobPosition(env, state, MOB_TAG);
+            Float mobHp = env.getMobHealth(mobTag);
+            Vec3 mobPos = mobPosition(env, state, mobTag);
             Double dist = distance(ownPos, mobPos);
 
             System.out.println("[" + phase + " t" + tick + "] HP " + ownHp + " @" + ownPos
@@ -239,8 +219,8 @@ public class MineAgentBaseline {
      * @param when descriptive label of the moment (e.g. "start", "after hit 3")
      */
     private void logMobHealth(MinecraftEnv env, String when) {
-        Float hp = env.getMobHealth(MineAgentBaseline.MOB_TAG);
-        System.out.println("HP of " + MineAgentBaseline.MOB_TAG + " (" + when + "): " + (hp == null ? "dead/unreachable" : hp));
+        Float hp = env.getMobHealth(MineAgentBaseline.mobTag);
+        System.out.println("HP of " + MineAgentBaseline.mobTag + " (" + when + "): " + (hp == null ? "dead/unreachable" : hp));
     }
 
     /**

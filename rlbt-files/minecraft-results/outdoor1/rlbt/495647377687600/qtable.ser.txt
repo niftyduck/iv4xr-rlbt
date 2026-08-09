@@ -1,0 +1,46 @@
+
+
+=====================Q-Table========================================
+Qtable size = 8
+----------------------------------------------------------------------------
+State = [IN_REACH|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 1.7936946926397488
+action: ATTACK	value: 0.5395106835720871
+action: RETREAT	value: 1.0209347960634068
+State = [OUT_OF_REACH|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 1.2632174723135732
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.38392032695312495
+State = [IN_REACH|CRITICAL|LOW]
+Number of Q value entry= 3
+action: APPROACH	value: 0.5048125
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [IN_REACH|MEDIUM|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.5048125
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [IN_REACH|MEDIUM|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.653297592578125
+action: ATTACK	value: 0.6247332889667027
+action: RETREAT	value: 1.3210887612422715
+State = [UNSEEN|HIGH|HIGH]
+Number of Q value entry= 3
+action: APPROACH	value: 0.9694034904338469
+action: ATTACK	value: 0.1
+action: RETREAT	value: 0.1
+State = [IN_REACH|LOW|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.7480457484374999
+action: ATTACK	value: 0.325
+action: RETREAT	value: 0.1
+State = [OUT_OF_REACH|MEDIUM|MEDIUM]
+Number of Q value entry= 3
+action: APPROACH	value: 0.1
+action: ATTACK	value: 0.33975
+action: RETREAT	value: 0.325
+----------------------------------------------------------------------------
