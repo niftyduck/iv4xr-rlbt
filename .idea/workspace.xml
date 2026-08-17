@@ -8,13 +8,19 @@
       <change afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/target/test-classes/levels/arena.csv" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.csv" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/arena.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor1.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/csv-editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor1_spider1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor1_zombie1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor1_zombie2.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_blaze1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_creeper1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_enderman1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_skeleton1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_skeleton2.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_witch1.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sut/minecraft/mineflayer-testbench/examples/outdoor2_witch2.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/configuration/MinecraftConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/configuration/MinecraftConfiguration.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgentBaseline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MineAgentBaseline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/resources/configurations/mineAgent.config" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftEnv.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftState.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/MinecraftState.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/StatusToWorldModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/sut/minecraft/minecraftlib/src/main/java/eu/fbk/iv4xr/minecraftlib/StatusToWorldModel.java" afterDir="false" />
@@ -61,6 +67,7 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;com.intellij.ide.FileNotInSourceRootChecker.no.check&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
@@ -105,6 +112,34 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.RuntimeException" package="java.lang" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java</url>
+          <line>81</line>
+          <properties field="APPROACH_DISTANCE" class="eu.fbk.iv4xr.rlbt.minecraft.MinecraftRLEnvironment" />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftBurlapState.java</url>
+          <line>52</line>
+          <properties field="RETREAT_RANGE" class="eu.fbk.iv4xr.rlbt.minecraft.MinecraftBurlapState" />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$PROJECT_DIR$/src/main/java/eu/fbk/iv4xr/rlbt/minecraft/MinecraftRLEnvironment.java</url>
+          <line>82</line>
+          <properties field="RETREAT_DISTANCE" class="eu.fbk.iv4xr.rlbt.minecraft.MinecraftRLEnvironment" />
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

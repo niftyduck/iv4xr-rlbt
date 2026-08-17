@@ -1,4 +1,6 @@
 target/
+rlbt-files/
+dist-release/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

@@ -50,7 +50,7 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
     public static final double ATTACK_REACH = 4.6;
 
     /** Past this distance RETREAT has no destination to aim for. */
-    public static final double RETREAT_RANGE = 6.0;
+    public static final double RETREAT_RANGE = 10.0;
 
     /** Health boundaries as a fraction of maximum health.ì */
     public static final float HP_CRITICAL_RATIO = 0.25f;

@@ -24,7 +24,21 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\495647377687600\actions.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\495647377687600\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511522486986600\actions.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -38,7 +52,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511656312551100\actions.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511656312551100\ticks.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511954330833900\actions.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\rlbt-files\minecraft-results\outdoor1\rlbt\511954330833900\episodeSummary.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -102,6 +137,20 @@
           </value>
         </entry>
         <entry key="\src\test\resources\levels\LabRecruits_random_level2-1_fixed4Agents.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\Random-Extreme-2Agents.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\Random-Extreme.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -178,6 +227,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\src\test\resources\levels\firetest.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\hollowsquare.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\src\test\resources\levels\lab1.csv">
           <value>
             <Attribute>
@@ -186,6 +249,34 @@
           </value>
         </entry>
         <entry key="\src\test\resources\levels\ramptest.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\samira_8room.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\samira_8room2Agents.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\samira_8room4Agents.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\src\test\resources\levels\visibilitytest.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -206,7 +297,21 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\aplib-demo.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\damage.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\minecraftlib\src\test\resources\levels\wood-corners.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -221,6 +326,13 @@
           </value>
         </entry>
         <entry key="\sut\minecraft\minecraftlib\target\test-classes\levels\anvil-test.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\minecraftlib\target\test-classes\levels\arena.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -262,7 +374,77 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor1.csv">
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor1_spider1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor1_zombie1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor1_zombie2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_blaze1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_creeper1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_enderman1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_skeleton1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_witch1.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\outdoor2_witch2.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\sut\minecraft\mineflayer-testbench\examples\wood-corners.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

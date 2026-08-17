@@ -79,12 +79,12 @@ public class MinecraftRLEnvironment implements Environment {
     private final String weapon;
 
     /** Distance that APPROACH and RETREAT aim to reach */
-    private static final double APPROACH_DISTANCE = 3.0;
+    private static final double APPROACH_DISTANCE = 6.0;
     private static final double RETREAT_DISTANCE = MinecraftBurlapState.RETREAT_RANGE;
 
     private static final double RETREAT_TOLERANCE = 1.5;
     private static final int ATTACK_COOLDOWN_TICKS = 20;
-
+    
     /** Weight of the coverage exploration bonus: what a state-action tuple is worth
         on its first visit of an episode */
     private static final double COVERAGE_BONUS = 1.0;
