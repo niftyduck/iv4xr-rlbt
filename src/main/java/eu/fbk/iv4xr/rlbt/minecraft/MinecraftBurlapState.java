@@ -48,7 +48,7 @@ public class MinecraftBurlapState extends GenericOOState implements Serializable
     /** Attack reach in blocks, measured on the outdoor1 logs with zombie and iron sword:
         every hit landed below 4.60, every miss happened from 4.63 on. */
     public static final double ATTACK_REACH = 4.6;
-
+        
     /** Past this distance RETREAT has no destination to aim for. */
     public static final double RETREAT_RANGE = 10.0;
 

@@ -14,6 +14,7 @@ import burlap.mdp.singleagent.SADomain;
 import burlap.mdp.singleagent.environment.Environment;
 import burlap.mdp.singleagent.environment.EnvironmentOutcome;
 import eu.fbk.iv4xr.rlbt.labrecruits.LabRecruitsState;
+import eu.fbk.iv4xr.rlbt.labrecruits.LabRecruitsStateEncoder;
 
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -28,105 +29,101 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import burlap.mdp.core.oo.state.ObjectInstance;
-import eu.fbk.iv4xr.rlbt.labrecruits.LabRecruitsEntityObject;
-import world.LabEntity;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 
 /**
- * Deep Q-Network (DQN) implementation for LabRecruits.
- *
- * Unlike tabular Q-learning, there is no Q-table (no HashMap of states/nodes).
- * The neural network replaces the entire table: given a state encoded as a feature
- * vector, it returns Q-values for all actions in a single forward pass.
- *
+ * Deep Q-Network (DQN) implementation, shared by every SUT.
+ * The class is domain-agnostic: the SUT enters only through a StateEncoder
+ * (input side) and a list of action names (output side).
  * This implementation includes the two core DQN stabilisation techniques:
- *
  * 1. Experience Replay (replay buffer): past transitions (s, a, r, s', done) are
  *    stored in a circular buffer. At each step, a random mini-batch is sampled from
  *    it for training. This breaks the temporal correlation between consecutive samples
  *    and allows each transition to be reused multiple times.
- *
  * 2. Target Network: a frozen copy of the main network used exclusively to compute
  *    the Bellman target. It is re-synchronized with the main network every
- *    TARGET_UPDATE_FREQUENCY steps. Without it, the target shifts at every gradient
+ *    targetUpdateFrequency steps. Without it, the target shifts at every gradient
  *    step, causing the network to chase a moving target.
  */
 public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAgent {
 
-    /** Main network: updated at every training step via mini-batch gradient descent. */
     private MultiLayerNetwork network;
 
-    /**
-     * Target network: a frozen copy of the main network used to compute stable
-     * Bellman targets. Re-synchronized every TARGET_UPDATE_FREQUENCY global steps.
-     */
+    /** A frozen copy of the main network used to compute stable
+     *  Bellman targets. Re-synchronized every targetUpdateFrequency global steps. */
     private MultiLayerNetwork targetNetwork;
 
-    /**
-     * Fixed list of all entity IDs in the level. It determines both the input size
-     * (one feature per entity) and the output size (one Q-value per action/entity)
-     * of the network.
-     */
-    private List<String> entityIds;
+    /** Turns a domain state into the network's input vector: determines the input size. */
+    private final StateEncoder encoder;
+
+    /* Action names in the order of the network's output neurons: determines the output
+     * size, and is what maps a BURLAP Action back to its column index. */
+    private final List<String> actionNames;
 
     /** Current epsilon for the epsilon-greedy policy. Decays toward epsilonMin over episodes. */
     private double epsilongr;
+
     /** Floor value for epsilon decay: exploration never drops below this threshold. */
     private double epsilonMin;
     private double decayedEpsilonstep;
     protected EpsilonGreedy learningPolicy;
     protected int maxEpisodeSize;
+
     /** Number of neurons in each hidden layer of the network. */
     private int hiddenSize;
 
     /** Step counter within the current episode. Reset at the start of each episode. */
     protected int eStepCounter;
 
-    /**
-     * Total number of steps taken across all episodes.
-     * Used to schedule target network synchronisation.
-     */
+    /** Total number of steps taken across all episodes.
+     * Used to schedule target network synchronisation. */
     protected int totalNumberOfSteps = 0;
 
-    // ---- Replay buffer constants ----
+    /*
+     * ---- Replay buffer and target network ----
+     *
+     * These four are not constants: their right value depends on how long an episode is
+     * in the SUT at hand, which varies by almost an order of magnitude between the two
+     * (LabRecruits caps an episode at 200 actions, Minecraft at 30). The defaults below
+     * are the LabRecruits-sized ones; a SUT overrides what it needs through the setters,
+     * which is how burlap.network.* reaches this class.
+     *
+     * Getting this wrong is silent: with minReplaySize larger than the transitions a
+     * whole run produces, training never starts and the serialised model is nothing but
+     * its Xavier initialisation. Check "Total training steps" in the network summary.
+     */
+
+    private static final int DEFAULT_REPLAY_BUFFER_CAPACITY = 10000;
+    private static final int DEFAULT_BATCH_SIZE = 32;
+    private static final int DEFAULT_MIN_REPLAY_SIZE = 64;
+    private static final int DEFAULT_TARGET_UPDATE_FREQUENCY = 100;
 
     /** Maximum number of transitions stored in the replay buffer (FIFO, oldest discarded). */
-    private static final int REPLAY_BUFFER_CAPACITY = 10000;
+    private int replayBufferCapacity = DEFAULT_REPLAY_BUFFER_CAPACITY;
 
     /** Number of transitions sampled per training step. */
-    private static final int BATCH_SIZE = 32;
+    private int batchSize = DEFAULT_BATCH_SIZE;
 
-    /**
-     * Minimum number of transitions that must be in the buffer before training begins.
-     * This warm-up phase ensures the first batches are sufficiently diverse.
-     */
-    private static final int MIN_REPLAY_SIZE = 64;
+    /** Minimum number of transitions that must be in the buffer before training begins.
+     * This warm-up phase ensures the first batches are sufficiently diverse. */
+    private int minReplaySize = DEFAULT_MIN_REPLAY_SIZE;
 
-    // ---- Target network constants ----
-
-    /**
-     * Number of global steps between each copy of the main network weights into the
-     * target network. A lower value means faster adaptation but less stability.
-     */
-    private static final int TARGET_UPDATE_FREQUENCY = 100;
+    /** Number of global steps between each copy of the main network weights into the
+     * target network. A lower value means faster adaptation but less stability. */
+    private int targetUpdateFrequency = DEFAULT_TARGET_UPDATE_FREQUENCY;
 
     /** The replay buffer: a circular list of past transitions (s, a, r, s', done). */
     private final List<Transition> replayBuffer = new ArrayList<>();
 
-    /**
-     * MSE loss of the most recent trainOnBatch() call (NaN until the first one runs).
+    /** MSE loss of the most recent trainOnBatch() call (NaN until the first one runs).
      * Logged/printed so that training instability (loss exploding or oscillating)
-     * can be distinguished from slow-but-stable convergence during experiments.
-     */
+     * can be distinguished from slow-but-stable convergence during experiments. */
     private double lastTrainingLoss = Double.NaN;
 
     public double getLastTrainingLoss() { return lastTrainingLoss; }
@@ -152,6 +149,32 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
     public void setMaxEpisodeSize(int maxEpisodeSize) { this.maxEpisodeSize = maxEpisodeSize; }
     public void setTotalNumberOfSteps(int totalNumberOfSteps) { this.totalNumberOfSteps = totalNumberOfSteps; }
 
+    // ---- Replay buffer / target network: getters and setters ----
+    public int getReplayBufferCapacity() { return replayBufferCapacity; }
+    public int getBatchSize() { return batchSize; }
+    public int getMinReplaySize() { return minReplaySize; }
+    public int getTargetUpdateFrequency() { return targetUpdateFrequency; }
+
+    public void setReplayBufferCapacity(int replayBufferCapacity) { this.replayBufferCapacity = replayBufferCapacity; }
+    public void setBatchSize(int batchSize) { this.batchSize = batchSize; }
+    public void setMinReplaySize(int minReplaySize) { this.minReplaySize = minReplaySize; }
+    public void setTargetUpdateFrequency(int targetUpdateFrequency) { this.targetUpdateFrequency = targetUpdateFrequency; }
+
+    /**
+     * LabRecruits convenience constructor: there one action interacts with one entity, so
+     * a single entity list defines both the encoding and the action space.
+     *
+     * @param entityIds fixed list of all entity IDs in the level
+     */
+    public DeepQLearningRL(SADomain domain, double gamma,
+                           List<String> entityIds,
+                           double learningRate, double epsilon,
+                           double decayEpsilonStep, int maxEpisodeSize,
+                           double epsilonMin, int hiddenSize) {
+        this(domain, gamma, new LabRecruitsStateEncoder(entityIds), entityIds,
+                learningRate, epsilon, decayEpsilonStep, maxEpisodeSize, epsilonMin, hiddenSize);
+    }
+
     /**
      * Constructs the DQN agent. Both the main network and the target network are
      * created with the same architecture; the target network is immediately
@@ -159,7 +182,8 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      *
      * @param domain           the domain in which to learn
      * @param gamma            discount factor γ for future rewards (e.g. 0.99)
-     * @param entityIds        fixed list of all entity IDs in the level
+     * @param encoder          turns a state of this domain into the network input vector
+     * @param actionNames      action names, in the order of the network's output neurons
      * @param learningRate     Adam optimizer learning rate (e.g. 0.001)
      * @param epsilon          initial exploration rate (1.0 = full random, 0.0 = greedy)
      * @param decayEpsilonStep amount subtracted from epsilon at the end of each episode
@@ -168,7 +192,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      * @param hiddenSize       number of neurons per hidden layer (both layers use the same size)
      */
     public DeepQLearningRL(SADomain domain, double gamma,
-                           List<String> entityIds,
+                           StateEncoder encoder, List<String> actionNames,
                            double learningRate, double epsilon,
                            double decayEpsilonStep, int maxEpisodeSize,
                            double epsilonMin, int hiddenSize) {
@@ -178,8 +202,8 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
          * entirely, taking a feature vector as input and returning Q-values as output.
          */
         this.solverInit(domain, gamma, null);
-        this.entityIds = entityIds;
-        int size = entityIds.size();
+        this.encoder = encoder;
+        this.actionNames = actionNames;
         this.epsilongr = epsilon;
         this.epsilonMin = epsilonMin;
         this.decayedEpsilonstep = decayEpsilonStep;
@@ -187,12 +211,15 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
         this.hiddenSize = hiddenSize;
         this.learningPolicy = new EpsilonGreedy(this, epsilon);
 
-        // Input is 2 features per entity (isObserved, value) - see encodeState() - while
-        // the output is still one Q-value per entity/action.
-        this.network = buildNetwork(2 * size, size, learningRate, hiddenSize);
+        int inputSize = encoder.inputSize();
+        int outputSize = actionNames.size();
+        System.out.println("DQN network: " + encoder.describe()
+                + " -> " + outputSize + " actions " + actionNames);
+
+        this.network = buildNetwork(inputSize, outputSize, learningRate, hiddenSize);
 
         // Target network starts as an exact copy of the main network
-        this.targetNetwork = buildNetwork(2 * size, size, learningRate, hiddenSize);
+        this.targetNetwork = buildNetwork(inputSize, outputSize, learningRate, hiddenSize);
         updateTargetNetwork();
     }
 
@@ -201,8 +228,8 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      * and a linear output layer (IDENTITY activation) to allow unbounded Q-values.
      * Adam is used as the optimizer.
      *
-     * @param inputSize  number of input features (= 2 * |entityIds|, see encodeState())
-     * @param outputSize number of output Q-values (= |entityIds|)
+     * @param inputSize  number of input features (= encoder.inputSize())
+     * @param outputSize number of output Q-values (= |actionNames|)
      * @param lr         Adam learning rate
      * @param hiddenSize number of neurons per hidden layer (configurable via burlap.network.hidden_size)
      * @return the initialised MultiLayerNetwork (Xavier weight initialisation)
@@ -224,50 +251,14 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
     }
 
     /**
-     * Encodes a LabRecruits state as a feature vector of length 2 * |entityIds|.
-     * Each entity i contributes two features, at positions 2*i and 2*i+1:
-     *   - isObserved: 1.0 if the entity has been observed by the agent so far, else 0.0
-     *   - value:      1.0 if the entity is active (isOn for switches, isOpen for doors),
-     *                 0.0 otherwise (including when not observed, where it is meaningless)
-     *
-     * Using two features instead of one avoids aliasing "not yet observed" with
-     * "observed and inactive" onto the same 0.0 input — with a single bit the network
-     * cannot tell apart an entity it never found from one it found and saw turned off,
-     * even though the right thing to do in each case (e.g. keep exploring towards an
-     * undiscovered entity vs. avoid an already-tried one) can be very different. The
-     * tabular QLearningRL does not have this issue: an unobserved entity is simply
-     * absent from its state's object map, which already yields a structurally
-     * different (and differently hashed) state.
-     *
-     * The result is reshaped to (1, 2 * |entityIds|) because DL4J always expects a
-     * 2D matrix where rows = batch size and columns = features.
-     *
-     * @param s the current LabRecruits state
-     * @return a (1, 2n) INDArray suitable as direct network input
+     * True when the observation is unusable and the episode has to be cut short.
+     * This is a LabRecruits failure mode: the active agent occasionally reports an empty
+     * observation, which encodes to an all-zeros vector indistinguishable from "nothing
+     * discovered yet". Minecraft states always carry their three features, so the check
+     * simply does not apply there.
      */
-    private INDArray encodeState(State s) {
-        LabRecruitsState lrs = (LabRecruitsState) s;
-        Map<String, ObjectInstance> observedEntities = lrs.getObjectsMap();
-        float[] features = new float[2 * entityIds.size()];
-
-        for (int i = 0; i < entityIds.size(); i++) {
-            String id = entityIds.get(i);
-            if (!observedEntities.containsKey(id)) {
-                features[2 * i] = 0.0f;     // isObserved = false
-                features[2 * i + 1] = 0.0f; // value: unused/don't-care
-                continue;
-            }
-            LabRecruitsEntityObject object = (LabRecruitsEntityObject) observedEntities.get(id);
-            LabEntity entity = (LabEntity) object.getLabRecruitsEntity();
-
-            features[2 * i] = 1.0f; // isObserved = true
-            if (entity.type.equalsIgnoreCase(LabEntity.DOOR))
-                features[2 * i + 1] = entity.getBooleanProperty("isOpen") ? 1.0f : 0.0f;
-            else if (entity.type.equalsIgnoreCase(LabEntity.SWITCH))
-                features[2 * i + 1] = entity.getBooleanProperty("isOn") ? 1.0f : 0.0f;
-        }
-
-        return Nd4j.create(features).reshape(1, 2 * entityIds.size());
+    private boolean isEmptyObservation(State s) {
+        return (s instanceof LabRecruitsState) && ((LabRecruitsState) s).numObjects() == 0;
     }
 
     /**
@@ -279,11 +270,11 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      */
     @Override
     public List<QValue> qValues(State s) {
-        INDArray qVals = network.output(encodeState(s));
+        INDArray qVals = network.output(encoder.encode(s));
         List<Action> actions = ActionUtils.allApplicableActionsForTypes(this.domain.getActionTypes(), s);
         List<QValue> result = new ArrayList<>();
         for (Action a : actions) {
-            int idx = entityIds.indexOf(a.actionName());
+            int idx = actionNames.indexOf(a.actionName());
             double q = (idx >= 0) ? qVals.getDouble(0, idx) : 0.0;
             result.add(new QValue(s, a, q));
         }
@@ -299,8 +290,8 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      */
     @Override
     public double qValue(State s, Action a) {
-        INDArray qVals = network.output(encodeState(s));
-        int idx = entityIds.indexOf(a.actionName());
+        INDArray qVals = network.output(encoder.encode(s));
+        int idx = actionNames.indexOf(a.actionName());
         return (idx >= 0) ? qVals.getDouble(0, idx) : 0.0;
     }
 
@@ -313,7 +304,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      */
     @Override
     public double value(State s) {
-        return network.output(encodeState(s)).max(1).getDouble(0);
+        return network.output(encoder.encode(s)).max(1).getDouble(0);
     }
 
     @Override
@@ -331,8 +322,8 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      *   4. Encode the resulting next state.
      *   5. Store the transition (s, a, r, s', done) in the replay buffer.
      *   6. Sample a random mini-batch from the buffer and train the main network
-     *      (only once MIN_REPLAY_SIZE transitions have been collected).
-     *   7. Every TARGET_UPDATE_FREQUENCY steps, copy the main network weights into
+     *      (only once minReplaySize transitions have been collected).
+     *   7. Every targetUpdateFrequency steps, copy the main network weights into
      *      the target network.
      *
      * At the end of the episode, epsilon is reduced by decayedEpsilonstep
@@ -352,14 +343,13 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
         while (!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)) {
             System.out.println("==================DeepQL - Next turn for this episode==================================");
 
-            LabRecruitsState curlabState = (LabRecruitsState) curState;
-            if (curlabState.numObjects() == 0) {
+            if (isEmptyObservation(curState)) {
                 System.out.println(" BUG : Empty Observation of RL active agent. Ending Episode...");
                 break;
             }
 
             // Step 1: Encode current state as a fixed-size feature vector
-            INDArray stateVec = encodeState(curState);
+            INDArray stateVec = encoder.encode(curState);
 
             // Step 2: Select action via epsilon-greedy using the main network
             Action action = learningPolicy.action(curState);
@@ -369,10 +359,10 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
             EnvironmentOutcome eo = env.executeAction(action);
 
             // Step 4: Encode the next state
-            INDArray nextStateVec = encodeState(eo.op);
+            INDArray nextStateVec = encoder.encode(eo.op);
 
             // Step 5: Store transition in the replay buffer (.dup() to prevent mutation)
-            int actionIdx = entityIds.indexOf(action.actionName());
+            int actionIdx = actionNames.indexOf(action.actionName());
             addToReplayBuffer(new Transition(stateVec.dup(), actionIdx, eo.r, nextStateVec.dup(), eo.terminated));
 
             // Step 6: Train the main network on a random mini-batch from the buffer
@@ -382,7 +372,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
             }
 
             // Step 7: Periodically synchronise the target network with the main network
-            if (totalNumberOfSteps % TARGET_UPDATE_FREQUENCY == 0) {
+            if (totalNumberOfSteps % targetUpdateFrequency == 0) {
                 updateTargetNetwork();
                 System.out.println("Target network updated at step " + totalNumberOfSteps);
             }
@@ -411,13 +401,13 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
 
     /**
      * Adds a transition to the replay buffer.
-     * If the buffer has reached REPLAY_BUFFER_CAPACITY, the oldest entry is removed
+     * If the buffer has reached replayBufferCapacity, the oldest entry is removed
      * first (FIFO circular behaviour).
      *
      * @param t the transition to store
      */
     private void addToReplayBuffer(Transition t) {
-        if (replayBuffer.size() >= REPLAY_BUFFER_CAPACITY) {
+        if (replayBuffer.size() >= replayBufferCapacity) {
             replayBuffer.remove(0);
         }
         replayBuffer.add(t);
@@ -436,7 +426,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      * network's own positive estimation errors. Decoupling the two networks for this
      * step reduces that overestimation bias.
      *
-     * All BATCH_SIZE transitions are stacked into matrices and processed in a single
+     * All batchSize transitions are stacked into matrices and processed in a single
      * network.fit() call, making the update efficient and reducing gradient variance
      * compared to single-sample updates.
      *
@@ -444,20 +434,20 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      * training instability (loss exploding/oscillating) can be told apart from slow
      * but stable convergence when analysing experiment results.
      *
-     * Does nothing if the buffer has fewer than MIN_REPLAY_SIZE transitions.
+     * Does nothing if the buffer has fewer than minReplaySize transitions.
      */
     private void trainOnBatch() {
-        if (replayBuffer.size() < MIN_REPLAY_SIZE) return;
+        if (replayBuffer.size() < minReplaySize) return;
 
         // Uniform random sampling (with replacement) from the replay buffer
-        List<Transition> batch = new ArrayList<>(BATCH_SIZE);
-        for (int i = 0; i < BATCH_SIZE; i++) {
+        List<Transition> batch = new ArrayList<>(batchSize);
+        for (int i = 0; i < batchSize; i++) {
             batch.add(replayBuffer.get(random.nextInt(replayBuffer.size())));
         }
 
-        // Stack individual (1, n) state vectors into (BATCH_SIZE, n) matrices
-        List<INDArray> stateList     = new ArrayList<>(BATCH_SIZE);
-        List<INDArray> nextStateList = new ArrayList<>(BATCH_SIZE);
+        // Stack individual (1, n) state vectors into (batchSize, n) matrices
+        List<INDArray> stateList     = new ArrayList<>(batchSize);
+        List<INDArray> nextStateList = new ArrayList<>(batchSize);
         for (Transition t : batch) {
             stateList.add(t.state);
             nextStateList.add(t.nextState);
@@ -496,7 +486,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      * Copies the current weights of the main network into the target network.
      * The copy is made with .dup() so that the two sets of parameters remain
      * completely independent after the call.
-     * Called every TARGET_UPDATE_FREQUENCY global steps during training,
+     * Called every targetUpdateFrequency global steps during training,
      * and also immediately after deserialising a saved model.
      */
     private void updateTargetNetwork() {
@@ -521,13 +511,12 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
         int stepCounter = 0;
 
         while (!env.isInTerminalState() && (stepCounter < maxSteps || maxSteps == -1)) {
-            LabRecruitsState curlabState = (LabRecruitsState) curState;
-            if (curlabState.numObjects() == 0) {
+            if (isEmptyObservation(curState)) {
                 System.out.println(" BUG : Empty Observation of RL active agent. Ending Episode...");
                 break;
             }
 
-            INDArray qValues = network.output(encodeState(curState));
+            INDArray qValues = network.output(encoder.encode(curState));
             Action action = getMaxValuedAction(curState, qValues);
             if (action == null) {
                 System.out.println("No action available from state: " + curState.toString());
@@ -561,7 +550,7 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
         Action best = null;
         double maxQ = Double.NEGATIVE_INFINITY;
         for (Action a : actions) {
-            int idx = entityIds.indexOf(a.actionName());
+            int idx = actionNames.indexOf(a.actionName());
             double q = (idx >= 0) ? qValues.getDouble(0, idx) : 0.0;
             if (q > maxQ) {
                 maxQ = q;
@@ -579,12 +568,28 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
      */
     public void printNetworkSummary(PrintStream ps) {
         ps.println("\n\n=====================Deep Q-Network Summary========================================");
-        ps.println("Entity IDs (actions): " + entityIds);
-        ps.println("Number of entities / actions: " + entityIds.size());
+        ps.println("State encoding: " + encoder.describe());
+        ps.println("Actions (output order): " + actionNames);
+        ps.println("Number of actions: " + actionNames.size());
         ps.println("Network layers: " + network.getnLayers());
         ps.println(network.summary());
+        ps.println("Hyperparameters: bufferCapacity=" + replayBufferCapacity
+                + ", batchSize=" + batchSize
+                + ", minReplaySize=" + minReplaySize
+                + ", targetUpdateFrequency=" + targetUpdateFrequency
+                + ", hiddenSize=" + hiddenSize);
         ps.println("Replay buffer size: " + replayBuffer.size());
         ps.println("Total training steps: " + totalNumberOfSteps);
+        // A gradient step happens only once the buffer passes minReplaySize, so a run can
+        // end with a model that was never trained. Say so, instead of leaving it to be
+        // inferred from two numbers.
+        int trainingSteps = Math.max(0, totalNumberOfSteps - minReplaySize + 1);
+        if (replayBuffer.size() < minReplaySize)
+            ps.println("WARNING: the buffer never reached minReplaySize (" + replayBuffer.size()
+                    + " < " + minReplaySize + "): the network was NEVER trained and these"
+                    + " weights are still the Xavier initialisation.");
+        else
+            ps.println("Gradient steps performed: ~" + trainingSteps);
         ps.println("----------------------------------------------------------------------------");
     }
 
@@ -634,15 +639,6 @@ public class DeepQLearningRL extends MDPSolver implements QProvider, LearningAge
         this.lastTrainingLoss = Double.NaN;
     }
 
-    /**
-     * Immutable record of a single environment transition stored in the replay buffer.
-     *
-     * @param state      encoded state vector (1, n) at time t — stored as a copy
-     * @param actionIdx  index of the executed action within entityIds
-     * @param reward     immediate reward r received after executing the action
-     * @param nextState  encoded state vector (1, n) at time t+1 — stored as a copy
-     * @param terminated true if the episode ended after this transition
-     */
     private static class Transition {
         final INDArray state;
         final int actionIdx;

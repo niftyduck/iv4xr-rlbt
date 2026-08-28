@@ -29,6 +29,17 @@ public class BurlapConfiguration extends Configuration{
 		parameters.put("burlap.algorithm", "QLearning");
 		parameters.put("burlap.qlearning.decayedepsilonstep", 0.95);
 		parameters.put("burlap.network.hidden_size",(int) 64);
+		/*
+		 * Replay buffer and target network. The defaults below are sized for LabRecruits,
+		 * whose episodes run up to 200 actions; a SUT with much shorter episodes has to
+		 * override them, or it will spend the whole run in the warm-up phase. Minecraft
+		 * caps episodes at 30 actions (and they end earlier on death), so
+		 * burlap_minecraft.config sets its own values.
+		 */
+		parameters.put("burlap.network.replay_buffer_capacity",(int) 10000);
+		parameters.put("burlap.network.batch_size",(int) 32);
+		parameters.put("burlap.network.min_replay_size",(int) 64);
+		parameters.put("burlap.network.target_update_frequency",(int) 100);
 	}
 	
 
