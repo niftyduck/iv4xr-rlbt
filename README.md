@@ -22,7 +22,8 @@ by `burlap.algorithm` in the BURLAP config file, not by the command line.
 - A running **vanilla Minecraft server** with `online-mode=false` (see
   [sut/minecraft/SERVER.md](sut/minecraft/SERVER.md) for the one used during development).
   The bot runs server commands, so it must be **OP**ed (default username: `Bot`).
-- **Python 3 + Pillow** only if you want to render the coverage heatmaps
+- **Python 3** with `numpy` and `matplotlib` (`pip install numpy matplotlib`) only if you want to
+  render the coverage heatmaps
 
 The testbench is a git submodule, so clone with:
 
@@ -193,7 +194,23 @@ java -cp target/iv4xr-rlbt-1.0-jar-with-dependencies.jar eu.fbk.iv4xr.rlbt.RlbtM
 ```
 
 In **training mode** the agent plays several episodes and outputs a Q-table; in **testing mode** it
-loads a learned Q-table and tests it on the SUT.
+loads a learned Q-table and tests it on the SUT. The other modes are `-testingMode` and
+`-randomMode` (random exploration, the non-learning baseline); multi agent uses a different entry
+point:
+
+```bash
+java -cp target/iv4xr-rlbt-1.0-jar-with-dependencies.jar eu.fbk.iv4xr.rlbt.RlbtMultiAgentMain \
+  -multiagentTrainingMode \
+  -burlapConfig src/test/resources/configurations/burlap_test.config \
+  -sutConfig src/test/resources/configurations/lrLevelMultiAgent.config
+```
+
+⚠️ In testing mode `burlap.algorithm` must be the same used for training, otherwise the tool tries
+to deserialize the wrong model file (`qtable.ser` vs `qnetwork.ser`).
+
+⚠️ `mvn test` does **not** run any RL training: the JUnit tests under `src/test/java/.../agents/`
+are functional tests of the iv4xr/LabRecruits engine itself. Training and testing only run through
+the commands above.
 
 ### BURLAP configuration file
 
@@ -239,8 +256,6 @@ replaced by `labrecruits.agentpassive_id` (passive agent) and `labrecruits.agent
 
 ## Further documentation
 
-- [`GUIDE.md`](GUIDE.md) — tabular Q-learning vs DQN: how the algorithm is chosen, and how to launch
-  each variant. In Italian.
 - [`sut/minecraft/mineflayer-testbench/README.md`](sut/minecraft/mineflayer-testbench/README.md) —
   the SUT: HTTP API, level CSV format, configuration.
 - [`sut/minecraft/minecraftlib/README.md`](sut/minecraft/minecraftlib/README.md) — the Java ↔
