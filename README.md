@@ -136,7 +136,7 @@ What runs is decided by three files, not by the command line.
 | Parameter | Default | Meaning |
 |---|---|---|
 | `mine.address` | `localhost` | address (`host` or `host:port`) of the Minecraft server |
-| `mine.level` | `.../examples/arena.csv` | CSV describing the arena; also names the results folder |
+| `mine.level` | `.../examples/outdoor2_skeleton2.csv` | CSV describing the arena; also names the results folder (the built-in fallback, used when the key is absent, is `arena.csv`) |
 | `mine.testbenchUrl` | `http://localhost:3000` | HTTP API exposed by the testbench |
 | `mine.mob_tag` | `mob1` | tag of the mob the agent fights, as written in the level CSV |
 | `mine.max_ticks_per_action` | `120` | tick budget for one action to reach its goal |
