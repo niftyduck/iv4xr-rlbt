@@ -11,7 +11,33 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
-sut/minecraft/minecraftlib/
-EDIT.md
-prompt.md
-PROJECT.md
+
+# JetBrains -- per-developer IDE state (the rest of .idea/ is shared config)
+.idea/workspace.xml
+.idea/csv-editor.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml
+*.iml
+out/
+
+# Other editors / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Java
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+# Python (heatmap scripts)
+__pycache__/
+*.pyc
+.venv/
+venv/

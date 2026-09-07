@@ -1,4 +1,8 @@
 [submodule "minecraft/mineflayer-testbench"]
 	path = sut/minecraft/mineflayer-testbench
 	url = https://github.com/niftyduck/MineflayerTestbench
-	branch = 3-add-http-api-server
+	branch = rlbt
+[submodule "sut/minecraft/minecraftlib"]
+	path = sut/minecraft/minecraftlib
+	url = https://github.com/niftyduck/minecraftlib
+	branch = rlbt
