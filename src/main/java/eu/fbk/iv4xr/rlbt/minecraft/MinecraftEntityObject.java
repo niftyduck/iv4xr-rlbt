@@ -47,7 +47,8 @@ public class MinecraftEntityObject implements ObjectInstance, Serializable {
         try {
             return new MinecraftEntityObject(this.minecraftEntity.deepclone());
         } catch (ClassNotFoundException | IOException e) {
-            // TODO Auto-generated catch block
+            // deepclone() serialises the entity; a failure here means the state
+            // cannot be snapshotted, so the caller gets a null copy back
             e.printStackTrace();
         }
         return null;
