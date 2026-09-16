@@ -1,4 +1,4 @@
-[submodule "minecraft/mineflayer-testbench"]
+[submodule "sut/minecraft/mineflayer-testbench"]
 	path = sut/minecraft/mineflayer-testbench
 	url = https://github.com/niftyduck/MineflayerTestbench
 	branch = rlbt
