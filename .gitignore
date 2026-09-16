@@ -12,16 +12,8 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
-# JetBrains -- per-developer IDE state (the rest of .idea/ is shared config)
-.idea/workspace.xml
-.idea/csv-editor.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-.idea/dictionaries/
-.idea/shelf/
-.idea/httpRequests/
-.idea/dataSources/
-.idea/dataSources.local.xml
+# JetBrains -- IDE state is per-developer, none of it belongs in the repo
+.idea/
 *.iml
 out/
 
