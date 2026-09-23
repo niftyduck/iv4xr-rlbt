@@ -24,7 +24,7 @@ public class MineAgentBaseline {
 
     // Predefined defaults
     static String defaultTestbenchUrl = "http://localhost:3000";
-    static String defaultLevelCsv = "sut/minecraft/mineflayer-testbench/examples/arena.csv";
+    static String defaultLevelCsv = "src/test/resources/minecraft-levels/arena.csv";
     static String currentDir = System.getProperty("user.dir");
     static String outputDir = currentDir + File.separator + "rlbt-files"+ File.separator + "minecraft-results";
     public static long systemtime = System.nanoTime();

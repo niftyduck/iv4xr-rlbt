@@ -111,7 +111,7 @@ or directly:
 ```bash
 python src/main/resources/scripts/heatmap_minecraft.py \
   --trace rlbt-files/minecraft-results/<level>/rlbt/<systemtime>/ticks.csv \
-  --level sut/minecraft/mineflayer-testbench/examples/<level>.csv \
+  --level src/test/resources/minecraft-levels/<level>.csv \
   --width 20 --height 20 --padding 1 --upscale 20 \
   -o rlbt-files/minecraft-results/<level>/rlbt/<systemtime>/heatmap.png
 ```
@@ -136,7 +136,7 @@ What runs is decided by three files, not by the command line.
 | Parameter | Default | Meaning |
 |---|---|---|
 | `mine.address` | `localhost` | address (`host` or `host:port`) of the Minecraft server |
-| `mine.level` | `.../examples/outdoor2_skeleton2.csv` | CSV describing the arena; also names the results folder (the built-in fallback, used when the key is absent, is `arena.csv`) |
+| `mine.level` | `.../minecraft-levels/outdoor2_skeleton2.csv` | CSV describing the arena; also names the results folder (the built-in fallback, used when the key is absent, is `arena.csv`) |
 | `mine.testbenchUrl` | `http://localhost:3000` | HTTP API exposed by the testbench |
 | `mine.mob_tag` | `mob1` | tag of the mob the agent fights, as written in the level CSV |
 | `mine.max_ticks_per_action` | `120` | tick budget for one action to reach its goal |
@@ -144,7 +144,7 @@ What runs is decided by three files, not by the command line.
 | `mine.reward_type` | `CoverageOriented` | `CoverageOriented` (bonus `β/√N` on new state-action quadruples) or `CombatOriented` (damage dealt − damage taken) |
 | `mine.weapon` | `iron_sword` | weapon given to the agent; changing it changes the difficulty of the scenario, not just a label |
 
-Ready-made arenas are in `sut/minecraft/mineflayer-testbench/examples/` (`arena`, `outdoor1_*`,
+Ready-made arenas are in `src/test/resources/minecraft-levels/` (`arena`, `outdoor1_*`,
 `outdoor2_*`, one per mob type).
 
 ### `src/test/resources/configurations/burlap_minecraft.config`
@@ -164,7 +164,7 @@ Possible, but then the testbench must be started separately (`npm run start addr
 ```bash
 java -cp target/iv4xr-rlbt-1.0-jar-with-dependencies.jar eu.fbk.iv4xr.rlbt.minecraft.MineAgent \
      http://localhost:3000 \
-     sut/minecraft/mineflayer-testbench/examples/arena.csv \
+     src/test/resources/minecraft-levels/arena.csv \
      training \
      src/test/resources/configurations/burlap_minecraft.config \
      src/test/resources/configurations/mineAgent.config

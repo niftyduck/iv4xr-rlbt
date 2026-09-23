@@ -25,7 +25,7 @@ import eu.iv4xr.framework.spatial.Vec3;
 public class MineAgent {
 	// Predefined defaults
 	static String defaultTestbenchUrl = "http://localhost:3000";
-	static String defaultLevelCsv = "sut/minecraft/mineflayer-testbench/examples/arena.csv";
+	static String defaultLevelCsv = "src/test/resources/minecraft-levels/arena.csv";
 	static String defaultGameMode = "training";
 
 	static BurlapConfiguration burlapConfiguration = new BurlapConfiguration();

@@ -11,7 +11,7 @@
 #
 #   <session_dir>  run folder that contains ticks.csv, e.g.
 #                  rlbt-files/minecraft-results/arena/baseline/<systemtime>
-#   [level_csv]    default: sut/minecraft/mineflayer-testbench/examples/arena.csv
+#   [level_csv]    default: src/test/resources/minecraft-levels/arena.csv
 #   [width]        map width  in blocks (default: 20)
 #   [height]       map height in blocks (default: 20)
 #   [output_png]   default: <session_dir>/heatmap.png
@@ -22,7 +22,7 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 heatmap_script="$repo_dir/src/main/resources/scripts/heatmap_minecraft.py"
 
 session_dir="${1:?usage: $0 <session_dir> [level_csv] [width] [height] [output_png]}"
-level_csv="${2:-$repo_dir/sut/minecraft/mineflayer-testbench/examples/arena.csv}"
+level_csv="${2:-$repo_dir/src/test/resources/minecraft-levels/arena.csv}"
 width="${3:-20}"
 height="${4:-20}"
 output="${5:-$session_dir/heatmap.png}"

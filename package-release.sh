@@ -34,6 +34,7 @@ PKG="$OUT_ROOT/$PKG_NAME"
 JAR="$PROJECT_DIR/target/iv4xr-rlbt-1.0-jar-with-dependencies.jar"
 TESTBENCH="$PROJECT_DIR/sut/minecraft/mineflayer-testbench"
 CONFIG_DIR="$PROJECT_DIR/src/test/resources/configurations"
+LEVELS_DIR="$PROJECT_DIR/src/test/resources/minecraft-levels"
 
 info() { echo "[package] $*"; }
 fail() { echo "[package] ERRORE: $*" >&2; exit 1; }
@@ -63,6 +64,7 @@ MINE_ADDRESS="$(grep -E '^[[:space:]]*mine\.address[[:space:]]*=' "$CONFIG_DIR/m
 info "output: $PKG"
 rm -rf "$PKG"
 mkdir -p "$PKG/src/test/resources/configurations"
+mkdir -p "$PKG/src/test/resources/minecraft-levels"
 mkdir -p "$PKG/sut/minecraft/mineflayer-testbench"
 
 info "copio il jar ($(du -h "$JAR" | cut -f1))..."
@@ -74,10 +76,12 @@ cp "$CONFIG_DIR/game.config" \
    "$CONFIG_DIR/burlap_minecraft.config" \
    "$PKG/src/test/resources/configurations/"
 
+info "copio i livelli..."
+cp "$LEVELS_DIR"/*.csv "$PKG/src/test/resources/minecraft-levels/"
+
 info "copio il testbench mineflayer..."
 TB_OUT="$PKG/sut/minecraft/mineflayer-testbench"
 cp -r "$TESTBENCH/dist" "$TB_OUT/"
-cp -r "$TESTBENCH/examples" "$TB_OUT/"
 for f in package.json package-lock.json tsconfig.json config.json README.md LICENSE; do
 	[[ -f "$TESTBENCH/$f" ]] && cp "$TESTBENCH/$f" "$TB_OUT/"
 done
@@ -163,7 +167,7 @@ Tutti i parametri stanno in \`src/test/resources/configurations/\`:
 nella forma \`host:porta\`.
 
 Il livello attualmente selezionato e \`$LEVEL_REL\`.
-Gli altri livelli disponibili sono in \`sut/minecraft/mineflayer-testbench/examples/\`:
+Gli altri livelli disponibili sono in \`src/test/resources/minecraft-levels/\`:
 cambia \`mine.level\` in \`mineAgent.config\` per usarne uno diverso.
 
 ## Output

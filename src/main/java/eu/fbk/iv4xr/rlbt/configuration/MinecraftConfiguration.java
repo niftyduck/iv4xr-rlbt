@@ -16,7 +16,7 @@ public class MinecraftConfiguration extends Configuration {
 	public MinecraftConfiguration() {
 		parameters = new LinkedHashMap<String, Object>();
 		parameters.put("mine.address", "localhost");
-		parameters.put("mine.level", "sut/minecraft/mineflayer-testbench/examples/arena.csv");
+		parameters.put("mine.level", "src/test/resources/minecraft-levels/arena.csv");
 		parameters.put("mine.testbenchUrl", "http://localhost:3000");
 		parameters.put("mine.max_ticks_per_action", 120);
 		parameters.put("mine.max_actions_per_episode", 30);
