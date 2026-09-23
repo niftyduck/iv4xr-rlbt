@@ -63,6 +63,8 @@ public class MineAgentBaseline {
         mobTag = (String) mineConfiguration.getParameterValue("mine.mob_tag");
         String weapon = (String) mineConfiguration.getParameterValue("mine.weapon");
         MinecraftEnv env = new MinecraftEnv(testbenchUrl);
+        // The testbench starts with no bot: log ours into the Minecraft server first
+        env.join((String) mineConfiguration.getParameterValue("mine.address"));
         MinecraftState state = new MinecraftState();
         MinecraftGoalLib goalLib = new MinecraftGoalLib();
 

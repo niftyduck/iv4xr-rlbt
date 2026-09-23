@@ -87,18 +87,18 @@ public class RlbtLauncher {
 		// Choose training, random or test
 		String modeFlag = toModeFlag(gameConfig.getProperty("game.mode", "training"));
 
-		// Get server address and level
-		String address = mineConfig.getProperty("mine.address", "127.0.0.1:25565");
+		// Get level; the server address (mine.address) is read by the agent, which
+		// asks the testbench to log its bot in
 		String levelPath = new File(mineConfig.getProperty("mine.level")).getAbsolutePath();
 		String testbenchUrl = mineConfig.getProperty("mine.testbenchUrl", "http://localhost:3000");
 
 		// Start MineFlayer Testbench in server mode
 		String npm = System.getProperty("os.name").toLowerCase().contains("win") ? "npm.cmd" : "npm";
 		File workDir = new File("sut/minecraft/mineflayer-testbench");
-		ProcessBuilder pb = new ProcessBuilder(List.of(npm, "run", "start", "address=" + address));
+		ProcessBuilder pb = new ProcessBuilder(List.of(npm, "run", "start"));
 		pb.directory(workDir);
 		pb.inheritIO();
-		System.out.println("Starting mineflayer-testbench (server mode): address=" + address);
+		System.out.println("Starting mineflayer-testbench (server mode)");
 		Process testbench = pb.start();
 
 		if (baselineFlag) {
@@ -124,12 +124,14 @@ public class RlbtLauncher {
 	}
 
 	/**
-	 * Poll the testbench /status endpoint until it answers or the timeout expires.
+	 * Poll the testbench until it answers or the timeout expires. It serves no
+	 * route before a bot joins, so any HTTP answer below 500 (a 404 included)
+	 * means the server is up.
 	 */
 	private static void waitForTestbench(String url, int timeoutSeconds) throws Exception {
 		HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(url + "/status"))
+				.uri(URI.create(url + "/"))
 				.timeout(Duration.ofSeconds(2))
 				.GET().build();
 

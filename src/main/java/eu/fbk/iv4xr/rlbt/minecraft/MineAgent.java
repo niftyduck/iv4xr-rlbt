@@ -291,6 +291,8 @@ public class MineAgent {
 		String levelPath = new File(levelCsv).getAbsolutePath();
 
 		System.out.println("Connecting to MineflayerTestbench at " + testbenchUrl);
+		// The testbench starts with no bot: log ours into the Minecraft server first
+		env.join((String) mineConfiguration.getParameterValue("mine.address"));
 		System.out.println("Building level: " + levelPath);
 
 		Map<String, Vec3> tags = env.buildLevel(levelCsv, 0, 150, 0);
